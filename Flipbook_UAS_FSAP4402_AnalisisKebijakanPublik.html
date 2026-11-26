@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flipbook UAS — FSAP4402 Analisis Kebijakan Publik</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    /* Multi-device fallback vars without overriding :root in Antigravity */
+    body {
+      background-color: var(--background, #f8fafc);
+      color: var(--foreground, #0f172a);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .fb-card { background-color: var(--card, #ffffff); border-color: var(--border, #cbd5e1); }
+    .fb-muted { color: var(--muted-foreground, #475569); }
+    .fb-sec { background-color: var(--secondary, #e2e8f0); color: var(--secondary-foreground, #0f172a); }
+    .fb-pri { background-color: var(--primary, #1d4ed8); color: var(--primary-foreground, #ffffff); }
+    @keyframes pageFlip {
+      0% { opacity: 0; transform: perspective(1200px) rotateY(-8deg) scale(0.98); }
+      100% { opacity: 1; transform: perspective(1200px) rotateY(0deg) scale(1); }
+    }
+    .flip-enter { animation: pageFlip 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+  </style>
+</head>
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased min-h-screen p-4 md:p-6">
+  <div class="max-w-5xl mx-auto space-y-4">
+    <header class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 flex flex-wrap items-center justify-between gap-3 shadow-sm">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-[var(--primary)] text-[var(--primary-foreground)]">FSAP4402</span>
+          <span class="text-xs font-medium text-[var(--muted-foreground)]">Sabtu, 28 Nov 2026 • 13:45–15:15 WIB • UOLP UT</span>
+        </div>
+        <h1 class="text-lg font-bold mt-1">Flipbook Rangkuman UAS: Analisis Kebijakan Publik</h1>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="toggleToc()" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[var(--border)] hover:bg-[var(--secondary)] transition">Daftar Halaman</button>
+        <span id="pageBadge" class="px-3 py-1.5 text-xs font-mono font-bold rounded-lg bg-[var(--secondary)] text-[var(--secondary-foreground)]">1 / 9</span>
+      </div>
+    </header>
+
+    <div class="w-full h-1.5 bg-[var(--secondary)] rounded-full overflow-hidden">
+      <div id="progressBar" class="h-full bg-[var(--primary)] transition-all duration-300" style="width: 11%"></div>
+    </div>
+
+    <nav id="tocDrawer" class="hidden bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 grid grid-cols-2 sm:grid-cols-3 gap-2"></nav>
+
+    <main class="relative bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-md overflow-hidden">
+      <div class="h-1.5 w-full bg-gradient-to-r from-[var(--chart-1)] via-[var(--primary)] to-[var(--chart-3)]"></div>
+      <div id="pageContent" class="p-6 md:p-8 min-h-[520px] flip-enter"></div>
+      <footer class="border-t border-[var(--border)] px-6 py-3.5 flex items-center justify-between bg-[var(--sidebar)]">
+        <button id="prevBtn" onclick="prevPage()" class="px-4 py-2 text-xs font-semibold rounded-lg border border-[var(--border)] bg-[var(--card)] hover:bg-[var(--secondary)] disabled:opacity-40 transition">← Sebelumnya</button>
+        <div class="text-xs text-[var(--muted-foreground)] hidden sm:block">Gunakan panah <kbd class="px-1.5 py-0.5 border border-[var(--border)] rounded">←</kbd> <kbd class="px-1.5 py-0.5 border border-[var(--border)] rounded">→</kbd></div>
+        <button id="nextBtn" onclick="nextPage()" class="px-4 py-2 text-xs font-semibold rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 disabled:opacity-40 transition">Berikutnya →</button>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    const pages = [
+      {
+        title: "Sampul & Info Ujian",
+        tag: "SAMPUL",
+        render: () => `
+          <div class="flex flex-col justify-between h-full space-y-6 py-4">
+            <div class="space-y-3">
+              <span class="inline-block px-3 py-1 text-xs font-bold rounded-full bg-[var(--secondary)] text-[var(--primary)]">PERSIAPAN UAS UOLP • SEMESTER 7</span>
+              <h2 class="text-3xl font-extrabold tracking-tight">Analisis Kebijakan Publik</h2>
+              <p class="text-sm text-[var(--muted-foreground)]">Kode Mata Kuliah: <strong>FSAP4402</strong> | Rujukan Utama: <strong>BMP Analisis Kebijakan Publik UT & William N. Dunn</strong></p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-2">
+                <h3 class="text-sm font-bold text-[var(--primary)]">Detail Pelaksanaan Ujian</h3>
+                <ul class="text-xs space-y-1.5 text-[var(--muted-foreground)]">
+                  <li>• <strong>Hari/Tanggal:</strong> Sabtu, 28 November 2026</li>
+                  <li>• <strong>Waktu:</strong> Sesi 4 (13:45 – 15:15 WIB)</li>
+                  <li>• <strong>Lokasi:</strong> UPJ Bintaro, Gedung B Lt. 8 (Ruang 3 / Kursi 19)</li>
+                  
+                </ul>
+              </div>
+              <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-2">
+                <h3 class="text-sm font-bold text-[var(--success)]">Keunggulan Anda di Mata Kuliah Ini</h3>
+                <p class="text-xs text-[var(--muted-foreground)] leading-relaxed">Anda baru saja menyelesaikan praktik lapangan (SILOKA Cigombong) dengan pisau analisis <strong>Edwards III, Dunn, dan Multi-Criteria Analysis (MCA)</strong>. Gunakan pengalaman tersebut untuk langsung memahami soal-soal aplikasi kebijakan di UAS!</p>
+              </div>
+            </div>
+            <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--secondary)] text-xs">
+              <strong>Peta Materi UAS:</strong> Konsep Dasar & Siklus Kebijakan → Perumusan Masalah & Alat Analisis → Model-Model Kebijakan → Implementasi Kebijakan → Evaluasi & Kriteria Dunn → Rekomendasi & Etika Publik.
+            </div>
+          </div>`
+      },
+      {
+        title: "Konsep Dasar & Siklus Kebijakan",
+        tag: "BAGIAN 1",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Konsep Dasar & Siklus Kebijakan Publik</h2>
+              <span class="text-xs font-mono text-[var(--muted-foreground)]">Dunn & Dye</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)]">
+                <strong class="text-[var(--primary)]">Definisi Klasik Wajib Hafal:</strong><br/>
+                • <strong>Thomas R. Dye:</strong> <em>"Whatever governments choose to do or not to do."</em> (Tidak bertindak pun adalah kebijakan).<br/>
+                • <strong>William N. Dunn:</strong> Analisis kebijakan adalah disiplin ilmu sosial terapan yang menggunakan berbagai metode inkuiri dan argumen untuk menghasilkan informasi yang relevan secara politis guna memecahkan masalah publik.
+              </div>
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)]">
+                <strong class="text-[var(--primary)]">3 Bentuk Analisis Kebijakan (Dunn):</strong><br/>
+                • <strong>Prospektif:</strong> Sebelum kebijakan diambil (prediksi/rekomendasi).<br/>
+                • <strong>Retrospektif:</strong> Sesudah kebijakan dijalankan (evaluasi dampak).<br/>
+                • <strong>Integratif:</strong> Menggabungkan keduanya dalam siklus berkelanjutan.
+              </div>
+            </div>
+            <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--secondary)] text-xs space-y-2">
+              <h3 class="font-bold text-sm">5 Tahap Siklus Kebijakan (William N. Dunn)</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-5 gap-2">
+                <div class="p-2.5 rounded bg-[var(--card)] border border-[var(--border)]"><strong>1. Penyusunan Agenda</strong><br/>Masalah publik masuk daftar prioritas pemerintah</div>
+                <div class="p-2.5 rounded bg-[var(--card)] border border-[var(--border)]"><strong>2. Formulasi Kebijakan</strong><br/>Perancangan alternatif solusi/rancangan</div>
+                <div class="p-2.5 rounded bg-[var(--card)] border border-[var(--border)]"><strong>3. Adopsi Kebijakan</strong><br/>Legitimasi politik/UU oleh otoritas sah</div>
+                <div class="p-2.5 rounded bg-[var(--card)] border border-[var(--border)]"><strong>4. Implementasi</strong><br/>Eksekusi di lapangan oleh birokrasi/agen</div>
+                <div class="p-2.5 rounded bg-[var(--card)] border border-[var(--border)]"><strong>5. Evaluasi Kebijakan</strong><br/>Penilaian kinerja, dampak & umpan balik</div>
+              </div>
+            </div>
+          </div>`
+      },
+      {
+        title: "Perumusan Masalah & Alat Bantu",
+        tag: "BAGIAN 2",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Perumusan Masalah & Alat Bantu Analisis</h2>
+              <span class="text-xs font-mono text-[var(--muted-foreground)]">PPT Sesi 2 & 5</span>
+            </div>
+            <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs space-y-2">
+              <h3 class="font-bold text-sm text-[var(--primary)]">4 Fase Perumusan Masalah (Problem Structuring — Dunn)</h3>
+              <p><strong>1. Problem Search</strong> (pencarian gejala) → <strong>2. Problem Definition</strong> (pendefinisian substansi) → <strong>3. Problem Specification</strong> (pemodelan penyebab) → <strong>4. Problem Sensing</strong> (penginderaan krisis).</p>
+              <p class="text-[var(--error)]"><strong>Kesalahan Tipe III (Type III Error):</strong> Memecahkan masalah yang SALAH karena gagal merumuskan akar masalah di awal!</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)]">
+                <strong class="text-sm text-[var(--primary)]">Cost-Benefit Analysis (CBA)</strong>
+                <p class="mt-1">Membandingkan seluruh biaya dan manfaat yang <strong>keduanya dikonversi ke nilai uang (moneter)</strong>. Cocok untuk proyek infrastruktur/ekonomi (NPV, BCR).</p>
+              </div>
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)]">
+                <strong class="text-sm text-[var(--success)]">Cost-Effectiveness (CEA)</strong>
+                <p class="mt-1">Biaya diukur dalam uang, sedangkan hasil/manfaat diukur dalam <strong>unit non-moneter</strong> (misal: nyawa terselamatkan, angka melek huruf).</p>
+              </div>
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)]">
+                <strong class="text-sm text-[var(--warning)]">Multi-Criteria Analysis (MCA)</strong>
+                <p class="mt-1">Menilai alternatif kebijakan berdasarkan <strong>banyak kriteria sekaligus</strong> (sosial, politik, keadilan, biaya) menggunakan pembobotan dan skoring.</p>
+              </div>
+            </div>
+          </div>`
+      },
+      {
+        title: "Model-Model Kebijakan Publik",
+        tag: "BAGIAN 3",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Model-Model dalam Analisis Kebijakan</h2>
+              <span class="text-xs font-mono text-[var(--muted-foreground)]">PPT Sesi 6 (Thomas R. Dye)</span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-xs border border-[var(--border)] rounded-lg overflow-hidden">
+                <thead class="bg-[var(--secondary)]">
+                  <tr>
+                    <th class="p-2 text-left">Nama Model</th>
+                    <th class="p-2 text-left">Asumsi Dasar & Ciri Khas</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-[var(--border)]">
+                  <tr><td class="p-2 font-semibold">1. Kelembagaan</td><td class="p-2">Kebijakan sebagai output resmi lembaga negara (legitimasi, universalitas, koersi).</td></tr>
+                  <tr><td class="p-2 font-semibold">2. Proses</td><td class="p-2">Kebijakan sebagai rangkaian aktivitas politik (agenda → formulasi → legitimasi → evaluasi).</td></tr>
+                  <tr><td class="p-2 font-semibold">3. Kelompok (Pluralis)</td><td class="p-2">Titik keseimbangan (<em>equilibrium</em>) dari tarik-menarik berbagai kelompok kepentingan (<em>interest groups</em>).</td></tr>
+                  <tr><td class="p-2 font-semibold">4. Elitis</td><td class="p-2">Kebijakan mencerminkan nilai dan kepentingan <strong>elit penguasa</strong>, bukan tuntutan massa (<em>top-down</em>).</td></tr>
+                  <tr><td class="p-2 font-semibold">5. Rasional</td><td class="p-2">Memilih alternatif dengan rasio efisiensi dan pencapaian nilai sosial tertinggi (<em>maximizing social gain</em>).</td></tr>
+                  <tr><td class="p-2 font-semibold">6. Inkremental</td><td class="p-2">Modifikasi kecil-kecilan dari kebijakan sebelumnya karena kendala biaya, waktu, dan politik (Lindblom).</td></tr>
+                  <tr><td class="p-2 font-semibold">7. Pilihan Publik</td><td class="p-2">Aktor politik bertindak seperti pelaku ekonomi yang rasional mengejar kepentingan diri/suara pemilih.</td></tr>
+                  <tr><td class="p-2 font-semibold">8. Sistem (Easton)</td><td class="p-2">Respons sistem politik terhadap tuntutan & dukungan lingkungan: <em>Input → Kotak Hitam → Output → Feedback</em>.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>`
+      },
+      {
+        title: "Model Implementasi Kebijakan",
+        tag: "BAGIAN 4 (WAJIB!)",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Model Implementasi Kebijakan Publik</h2>
+              <span class="text-xs font-mono text-[var(--primary)]">Top-Down vs Bottom-Up</span>
+            </div>
+            <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs space-y-2">
+              <h3 class="font-bold text-sm text-[var(--primary)]">1. Model George C. Edwards III (1980) — 4 Variabel Penentu</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                <div class="p-2.5 rounded bg-[var(--secondary)]"><strong>Komunikasi</strong><br/>Transmisi, kejelasan (<em>clarity</em>), konsistensi</div>
+                <div class="p-2.5 rounded bg-[var(--secondary)]"><strong>Sumber Daya</strong><br/>Staf, informasi, wewenang, fasilitas/anggaran</div>
+                <div class="p-2.5 rounded bg-[var(--secondary)]"><strong>Disposisi</strong><br/>Sikap, komitmen, dan integritas pelaksana</div>
+                <div class="p-2.5 rounded bg-[var(--secondary)]"><strong>Struktur Birokrasi</strong><br/>SOP (<em>Standard Operating Procedure</em>) & fragmentasi</div>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)]">
+                <strong class="text-[var(--primary)]">2. Van Meter & Van Horn (1975)</strong><br/>
+                6 Variabel: (1) Standar & sasaran, (2) Sumber daya, (3) Komunikasi antarorganisasi, (4) Karakteristik agen pelaksana, (5) Kondisi ekonomi-sosial-politik, (6) Disposisi pelaksana.
+              </div>
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)]">
+                <strong class="text-[var(--primary)]">3. Mazmanian & Sabatier + Bottom-Up (Lipsky)</strong><br/>
+                • <strong>Mazmanian & Sabatier:</strong> Kemudahan dikendalikan masalah, kemampuan UU menstrukturkan implementasi, faktor non-statutori.<br/>
+                • <strong>Street-Level Bureaucracy (Michael Lipsky):</strong> Aparat garis depan (guru, polisi, loket) punya diskresi nyata di lapangan.
+              </div>
+            </div>
+          </div>`
+      },
+      {
+        title: "Evaluasi Kebijakan (Kriteria Dunn)",
+        tag: "BAGIAN 5",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Evaluasi Kebijakan & 6 Kriteria William N. Dunn</h2>
+              <span class="text-xs font-mono text-[var(--muted-foreground)]">Retrospektif</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+              <div class="p-3 rounded-xl border border-[var(--border)] bg-[var(--background)]"><strong>1. Efektivitas</strong><br/>Apakah hasil yang diinginkan telah tercapai?</div>
+              <div class="p-3 rounded-xl border border-[var(--border)] bg-[var(--background)]"><strong>2. Efisiensi</strong><br/>Seberapa banyak usaha/biaya untuk mencapai hasil?</div>
+              <div class="p-3 rounded-xl border border-[var(--border)] bg-[var(--background)]"><strong>3. Kecukupan (Adequacy)</strong><br/>Seberapa jauh hasil memecahkan masalah dasar?</div>
+              <div class="p-3 rounded-xl border border-[var(--border)] bg-[var(--background)]"><strong>4. Perataan / Keadilan (Equity)</strong><br/>Apakah biaya & manfaat terdistribusi adil ke semua kelompok?</div>
+              <div class="p-3 rounded-xl border border-[var(--border)] bg-[var(--background)]"><strong>5. Responsivitas</strong><br/>Apakah hasil memuaskan kebutuhan/preferensi kelompok sasaran?</div>
+              <div class="p-3 rounded-xl border border-[var(--border)] bg-[var(--background)]"><strong>6. Ketepatan (Appropriateness)</strong><br/>Apakah tujuan kebijakan sendiri benar-benar bernilai & layak?</div>
+            </div>
+            <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--secondary)] text-xs space-y-1">
+              <strong>3 Pendekatan Evaluasi Dunn:</strong><br/>
+              • <strong>Evaluasi Semu (Pseudo):</strong> Deskriptif tanpa mempertanyakan nilai tujuan.<br/>
+              • <strong>Evaluasi Formal:</strong> Mengukur pencapaian berdasarkan target resmi UU/dokumen program.<br/>
+              • <strong>Evaluasi Keputusan Teoritis:</strong> Mengungkap tujuan tersembunyi/nilai para pemangku kepentingan.
+            </div>
+          </div>`
+      },
+      {
+        title: "Rekomendasi & Etika Analisis (Modul 11)",
+        tag: "BAGIAN 6",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Rekomendasi Kebijakan & Etika Publik</h2>
+              <span class="text-xs font-mono text-[var(--muted-foreground)]">Modul 11 / Sesi 8</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-2">
+                <h3 class="font-bold text-sm text-[var(--primary)]">Syarat Rekomendasi Berkualitas</h3>
+                <ul class="space-y-1">
+                  <li>• <strong>Berbasis Bukti (Evidence-based):</strong> Valid secara data & riset.</li>
+                  <li>• <strong>SMART:</strong> <em>Specific, Measurable, Achievable, Relevant, Time-bound</em>.</li>
+                  <li>• <strong>Fisibel:</strong> Layak secara teknis, ekonomi, politik, dan hukum.</li>
+                </ul>
+              </div>
+              <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-2">
+                <h3 class="font-bold text-sm text-[var(--primary)]">Prinsip Etika Analis Kebijakan</h3>
+                <ul class="space-y-1">
+                  <li>• Menolak menjadi <em>Hired Gun</em> (alat legitimasi kekuasaan/pemodal).</li>
+                  <li>• Menjaga <strong>Transparansi, Objektivitas, Akuntabilitas, Integritas</strong>.</li>
+                  <li>• Menjamin <strong>Partisipasi Bermakna (Arnstein)</strong> & <strong>Keadilan bagi kelompok rentan (Rawls)</strong>.</li>
+                </ul>
+              </div>
+            </div>
+            <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--secondary)] text-xs">
+              <strong>Tantangan Etika Analis:</strong> (1) Tekanan Politik ("mengamankan hasil"), (2) Konflik Kepentingan antara sponsor dan publik, (3) Ketertutupan akses data. <em>Solusi:</em> Berpedoman pada kode etik profesi dan melibatkan partisipasi publik.
+            </div>
+          </div>`
+      },
+      {
+        title: "Cheat-Sheet & Jebakan Soal",
+        tag: "CHEAT-SHEET",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Cheat-Sheet Cepat FSAP4402</h2>
+              <span class="text-xs font-mono text-[var(--primary)]">Hafalan Kilat</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-1">
+                <strong class="text-[var(--primary)]">Pembeda Kriteria Dunn (Sering Tertukar!):</strong>
+                <ul class="space-y-1 mt-1">
+                  <li>• <strong>Efektivitas</strong> = Hasil tercapai atau tidak.</li>
+                  <li>• <strong>Kecukupan</strong> = Hasilnya <em>cukup</em> menutup kebutuhan masalah?</li>
+                  <li>• <strong>Responsivitas</strong> = Warga sasaran <em>puas</em> atau tidak?</li>
+                  <li>• <strong>Equity</strong> = Keadilan distribusi manfaat ke kelompok rentan.</li>
+                </ul>
+              </div>
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-1">
+                <strong class="text-[var(--warning)]">Pembeda Alat Bantu & Implementasi:</strong>
+                <ul class="space-y-1 mt-1">
+                  <li>• <strong>CBA:</strong> Manfaat dihitung dalam <em>rupiah/uang</em>.</li>
+                  <li>• <strong>CEA:</strong> Manfaat dihitung dalam <em>unit fisik/sosial</em>.</li>
+                  <li>• <strong>Edwards III:</strong> 4 Variabel (Komunikasi, Sumber Daya, Disposisi, Struktur/SOP).</li>
+                  <li>• <strong>Lipsky:</strong> Diskresi aparat garis depan (<em>bottom-up</em>).</li>
+                </ul>
+              </div>
+            </div>
+          </div>`
+      },
+      {
+        title: "Simulasi Kuis UAS (50 Soal)",
+        tag: "LATIHAN SOAL",
+        render: () => renderQuizHTML()
+      }
+    ];
+
+    const quizData = [
+      {
+            "q": "1. Definisi klasik kebijakan publik dari Thomas R. Dye yang menekankan bahwa 'tidak mengambil tindakan' juga merupakan keputusan politik adalah...",
+            "opts": [
+                  "A. Public policy is a legal instrument",
+                  "B. Whatever governments choose to do or not to do",
+                  "C. Authoritative allocation of values",
+                  "D. Policy is administrative action"
+            ],
+            "ans": 1,
+            "exp": "Dye menegaskan keputusan pemerintah untuk diam atau membiarkan suatu masalah juga memiliki dampak kebijakan."
+      },
+      {
+            "q": "2. Menurut William N. Dunn, analisis kebijakan publik bersifat multidisiplin dan bertujuan menghasilkan informasi yang relevan secara politis guna...",
+            "opts": [
+                  "A. Memenangkan pemilu",
+                  "B. Memecahkan masalah-masalah publik",
+                  "C. Mengganti konstitusi",
+                  "D. Memperbanyak peraturan daerah"
+            ],
+            "ans": 1,
+            "exp": "Dunn mendefinisikan analisis kebijakan sebagai ilmu sosial terapan untuk memecahkan masalah publik."
+      },
+      {
+            "q": "3. Analisis yang dilakukan SEBELUM kebijakan ditetapkan guna memprediksi dampak dan merekomendasikan alternatif terbaik disebut analisis...",
+            "opts": [
+                  "A. Retrospektif",
+                  "B. Prospektif",
+                  "C. Evaluatif-historis",
+                  "D. Deskriptif murni"
+            ],
+            "ans": 1,
+            "exp": "Analisis prospektif berorientasi ke masa depan (ex-ante) untuk merumuskan dan merekomendasikan aksi."
+      },
+      {
+            "q": "4. Analisis yang berfokus pada penilaian hasil dan dampak setelah suatu kebijakan diimplementasikan disebut analisis...",
+            "opts": [
+                  "A. Prospektif",
+                  "B. Retrospektif",
+                  "C. Agenda setting",
+                  "D. Adopsi legislatif"
+            ],
+            "ans": 1,
+            "exp": "Analisis retrospektif menilai kinerja kebijakan yang sudah berjalan (ex-post)."
+      },
+      {
+            "q": "5. Urutan tahapan siklus kebijakan publik menurut William N. Dunn yang paling tepat adalah...",
+            "opts": [
+                  "A. Evaluasi → Adopsi → Formulasi → Implementasi",
+                  "B. Penyusunan Agenda → Formulasi → Adopsi → Implementasi → Evaluasi",
+                  "C. Implementasi → Agenda → Formulasi → Adopsi",
+                  "D. Formulasi → Evaluasi → Agenda → Implementasi"
+            ],
+            "ans": 1,
+            "exp": "Siklus kebijakan Dunn dimulai dari Agenda Setting, Formulasi, Adopsi, Implementasi, hingga Evaluasi."
+      },
+      {
+            "q": "6. Proses ketika isu masyarakat berhasil menarik perhatian pejabat publik dan masuk daftar prioritas penanganan pemerintah disebut tahap...",
+            "opts": [
+                  "A. Formulasi Kebijakan",
+                  "B. Penyusunan Agenda (Agenda Setting)",
+                  "C. Legitimasi Kebijakan",
+                  "D. Evaluasi Formal"
+            ],
+            "ans": 1,
+            "exp": "Agenda Setting menyaring masalah privat menjadi isu publik yang diagendakan pemerintah."
+      },
+      {
+            "q": "7. Karakteristik utama kebijakan publik dibanding keputusan organisasi swasta terletak pada sifatnya yang...",
+            "opts": [
+                  "A. Mengikat secara hukum dan dapat memaksa seluruh warga negara (otoritatif)",
+                  "B. Hanya berlaku bagi pemegang saham",
+                  "C. Selalu berorientasi mencari laba",
+                  "D. Tidak memerlukan legitimasi"
+            ],
+            "ans": 0,
+            "exp": "Kebijakan publik dibuat oleh otoritas sah yang memiliki monopoli daya paksa legal atas seluruh masyarakat."
+      },
+      {
+            "q": "8. Kesalahan paling berbahaya dalam perumusan masalah kebijakan yang disebut William N. Dunn sebagai 'Type III Error' adalah...",
+            "opts": [
+                  "A. Salah menghitung persentase anggaran",
+                  "B. Memecahkan masalah yang salah karena keliru mendefinisikan akar masalah",
+                  "C. Terlambat mencetak laporan",
+                  "D. Kurangnya jumlah responden"
+            ],
+            "ans": 1,
+            "exp": "Type III Error terjadi bila analis memberi jawaban benar secara teknis namun untuk perumusan masalah yang keliru."
+      },
+      {
+            "q": "9. Empat fase perumusan masalah (problem structuring) menurut Dunn meliputi pencarian masalah, pendefinisian masalah, spesifikasi masalah, dan...",
+            "opts": [
+                  "A. Penghapusan masalah",
+                  "B. Penginderaan masalah (problem sensing)",
+                  "C. Pengesahan anggaran",
+                  "D. Pengawasan BPK"
+            ],
+            "ans": 1,
+            "exp": "Problem structuring mencakup problem search, problem definition, problem specification, dan problem sensing."
+      },
+      {
+            "q": "10. Metode analisis yang mengonversi SELURUH biaya maupun manfaat kebijakan ke dalam satuan moneter (uang) untuk menghitung rasio kelayakan (BCR/NPV) adalah...",
+            "opts": [
+                  "A. Cost-Effectiveness Analysis (CEA)",
+                  "B. Cost-Benefit Analysis (CBA)",
+                  "C. Social Impact Assessment",
+                  "D. Delphi Technique"
+            ],
+            "ans": 1,
+            "exp": "CBA membandingkan biaya (Rupiah) dan manfaat (Rupiah) secara langsung."
+      },
+      {
+            "q": "11. Jika biaya proyek jalan tol dihitung dalam Rupiah, namun manfaatnya diukur dalam penurunan angka kecelakaan jiwa dan waktu tempuh menit, metode yang paling sesuai adalah...",
+            "opts": [
+                  "A. Cost-Benefit Analysis (CBA)",
+                  "B. Cost-Effectiveness Analysis (CEA)",
+                  "C. Regresi Linier",
+                  "D. Model Elitis"
+            ],
+            "ans": 1,
+            "exp": "CEA digunakan ketika output/manfaat sulit atau tidak etis dimonetisasi (seperti nyawa manusia atau angka melek huruf)."
+      },
+      {
+            "q": "12. Alat bantu evaluasi alternatif kebijakan yang membandingkan berbagai opsi berdasarkan banyak kriteria berbeda (efektivitas, keadilan, biaya, politik) lewat pembobotan adalah...",
+            "opts": [
+                  "A. Multi-Criteria Analysis (MCA)",
+                  "B. Single-Indicator Test",
+                  "C. Time Series",
+                  "D. Model Kelembagaan"
+            ],
+            "ans": 0,
+            "exp": "MCA memungkinkan analis menimbang kriteria kuantitatif dan kualitatif sekaligus melalui bobot dan skor."
+      },
+      {
+            "q": "13. Dalam analisis SWOT perumusan strategi kebijakan, faktor yang berasal dari lingkungan EKSTERNAL dan bersifat mendukung keberhasilan program adalah...",
+            "opts": [
+                  "A. Strengths (Kekuatan)",
+                  "B. Weaknesses (Kelemahan)",
+                  "C. Opportunities (Peluang)",
+                  "D. Threats (Ancaman)"
+            ],
+            "ans": 2,
+            "exp": "Strengths & Weaknesses adalah faktor internal; Opportunities & Threats adalah faktor eksternal."
+      },
+      {
+            "q": "14. Model analisis kebijakan yang memandang kebijakan publik semata-mata sebagai hasil aktivitas dan keluaran resmi lembaga-lembaga pemerintah adalah...",
+            "opts": [
+                  "A. Model Elitis",
+                  "B. Model Kelembagaan (Institutional)",
+                  "C. Model Kelompok",
+                  "D. Model Inkremental"
+            ],
+            "ans": 1,
+            "exp": "Model Kelembagaan menekankan struktur lembaga negara yang memberi legitimasi, universalitas, dan koersi."
+      },
+      {
+            "q": "15. Asumsi utama Model Elitis (Thomas R. Dye) dalam pembentukan kebijakan publik menyatakan bahwa...",
+            "opts": [
+                  "A. Kebijakan lahir dari aspirasi murni rakyat bawah",
+                  "B. Kebijakan merupakan cerminan nilai dan kepentingan kelompok elit penguasa yang mengalir top-down",
+                  "C. Semua kelompok punya akses setara ke parlemen",
+                  "D. Kebijakan selalu berubah total setiap tahun"
+            ],
+            "ans": 1,
+            "exp": "Model Elitis memandang massa rakyat relatif pasif dan nilai kebijakan ditentukan oleh elit penguasa."
+      },
+      {
+            "q": "16. Model Kelompok (Pluralis) yang dipelopori David Truman memandang kebijakan publik sebagai...",
+            "opts": [
+                  "A. Dominasi tunggal presiden",
+                  "B. Titik keseimbangan (equilibrium) dari tarik-menarik berbagai kelompok kepentingan",
+                  "C. Perhitungan matematika murni",
+                  "D. Keputusan acak birokrasi"
+            ],
+            "ans": 1,
+            "exp": "Dalam model pluralis, pemerintah berperan sebagai wasit atas persaingan antar-interest groups."
+      },
+      {
+            "q": "17. Model Rasional dalam kebijakan publik bertujuan mencapai 'maksimalisasi pencapaian nilai sosial' (maximizing social gain), namun dalam praktiknya sering sulit dilakukan karena...",
+            "opts": [
+                  "A. Terlalu murah biayanya",
+                  "B. Keterbatasan waktu, data, anggaran, dan kompleksitas nilai politik yang saling bertabrakan",
+                  "C. Tidak diakui oleh akademisi",
+                  "D. Hanya berlaku di negara berkembang"
+            ],
+            "ans": 1,
+            "exp": "Rasionalitas komprehensif menuntut biaya, waktu, dan informasi sempurna yang jarang tersedia di dunia nyata."
+      },
+      {
+            "q": "18. Model kebijakan yang menggambarkan perubahan kebijakan hanya sebagai modifikasi kecil atau tambal sulam dari kebijakan tahun sebelumnya adalah...",
+            "opts": [
+                  "A. Model Sistem",
+                  "B. Model Inkremental (Charles Lindblom)",
+                  "C. Model Pilihan Publik",
+                  "D. Model Rasional"
+            ],
+            "ans": 1,
+            "exp": "Model Inkremental realistis secara politik karena menghindari konflik besar akibat perubahan radikal."
+      },
+      {
+            "q": "19. Dalam Model Sistem Politik David Easton, tuntutan masyarakat dan dukungan politik yang masuk ke dalam sistem pemerintahan untuk diproses disebut...",
+            "opts": [
+                  "A. Output",
+                  "B. Input",
+                  "C. Feedback",
+                  "D. Outcome"
+            ],
+            "ans": 1,
+            "exp": "Easton merumuskan siklus: Input (tuntutan & dukungan) → Proses/Kotak Hitam → Output (kebijakan) → Feedback."
+      },
+      {
+            "q": "20. Model Pilihan Publik (Public Choice) menerapkan prinsip-prinsip ilmu ekonomi ke dalam proses politik dengan asumsi bahwa aktor politik bertindak untuk...",
+            "opts": [
+                  "A. Mengorbankan diri sepenuhnya tanpa pamrih",
+                  "B. Memaksimalkan kepentingan diri secara rasional (seperti suara pemilih atau anggaran birokrasi)",
+                  "C. Menghapus sistem pasar",
+                  "D. Mengikuti model inkremental saja"
+            ],
+            "ans": 1,
+            "exp": "Public Choice mengasumsikan politisi dan birokrat adalah rational self-interested actors."
+      },
+      {
+            "q": "21. Model analisis yang memformulasikan strategi kebijakan dalam situasi konflik kompetitif di mana hasil keputusan seseorang bergantung pada langkah pihak lawan adalah...",
+            "opts": [
+                  "A. Game Theory (Teori Permainan)",
+                  "B. Model Kelembagaan",
+                  "C. Model Proses",
+                  "D. Model Deskriptif"
+            ],
+            "ans": 0,
+            "exp": "Game Theory digunakan pada situasi strategis interdependen (seperti negosiasi antarnegara atau regulasi persaingan usaha)."
+      },
+      {
+            "q": "22. Tokoh yang merumuskan 4 variabel penentu keberhasilan implementasi kebijakan (Komunikasi, Sumber Daya, Disposisi, Struktur Birokrasi) adalah...",
+            "opts": [
+                  "A. William N. Dunn",
+                  "B. George C. Edwards III",
+                  "C. Thomas R. Dye",
+                  "D. Charles Lindblom"
+            ],
+            "ans": 1,
+            "exp": "George C. Edwards III (1980) sangat populer di soal UT dengan model 4 variabel implementasinya."
+      },
+      {
+            "q": "23. Dalam model Edwards III, tiga unsur utama dari dimensi 'Komunikasi' yang wajib terpenuhi agar pelaksana tidak salah menafsirkan kebijakan adalah...",
+            "opts": [
+                  "A. Anggaran, komputer, dan gedung",
+                  "B. Transmisi, kejelasan (clarity), dan konsistensi",
+                  "C. Hukuman, mutasi, dan promosi",
+                  "D. Partisipasi, evaluasi, dan voting"
+            ],
+            "ans": 1,
+            "exp": "Komunikasi kebijakan harus ditransmisikan dengan tepat, jelas (tidak ambigu), dan konsisten antaraturan."
+      },
+      {
+            "q": "24. Apabila suatu kebijakan publik sudah jelas aturannya dan cukup anggarannya, namun gagal karena petugas di lapangan bersikap apatis atau menolak melaksanakannya dengan tulus, maka kendala terletak pada dimensi...",
+            "opts": [
+                  "A. Sumber Daya",
+                  "B. Disposisi (Disposition)",
+                  "C. Struktur Birokrasi",
+                  "D. Transmisi"
+            ],
+            "ans": 1,
+            "exp": "Disposisi adalah watak, sikap, komitmen, dan kecenderungan pelaksana terhadap kebijakan."
+      },
+      {
+            "q": "25. Dampak negatif dari 'fragmentasi birokrasi' dalam dimensi Struktur Birokrasi menurut Edwards III adalah...",
+            "opts": [
+                  "A. Koordinasi menjadi semakin cepat",
+                  "B. Tanggung jawab terpecah-pecah antarinstansi sehingga koordinasi lumpuh dan saling lempar tanggung jawab",
+                  "C. SOP menjadi sangat sederhana",
+                  "D. Anggaran menjadi berlebih"
+            ],
+            "ans": 1,
+            "exp": "Fragmentasi membagi tanggung jawab kebijakan ke banyak unit tanpa koordinasi terpusat."
+      },
+      {
+            "q": "26. Pendekatan implementasi kebijakan yang menyoroti bagaimana aparat garis depan (polisi, guru, petugas loket) memiliki diskresi nyata saat berhadapan langsung dengan warga disebut...",
+            "opts": [
+                  "A. Top-Down Rationalism",
+                  "B. Street-Level Bureaucracy (Michael Lipsky)",
+                  "C. Institutional Model",
+                  "D. Elitist Approach"
+            ],
+            "ans": 1,
+            "exp": "Michael Lipsky (Bottom-Up) menunjukkan bahwa kebijakan riil yang dirasakan warga dibentuk oleh diskresi street-level bureaucrats."
+      },
+      {
+            "q": "27. Model implementasi Van Meter dan Van Horn (1975) menambahkan faktor eksternal yang sangat memengaruhi kinerja agen pelaksana di daerah, yaitu...",
+            "opts": [
+                  "A. Kondisi ekonomi, sosial, dan politik lingkungan",
+                  "B. Jumlah halaman undang-undang",
+                  "C. Warna seragam pegawai",
+                  "D. Lama masa studi analis"
+            ],
+            "ans": 0,
+            "exp": "Van Meter & Van Horn memasukkan kondisi ekonomi, sosial, dan politik sebagai variabel penentu implementasi."
+      },
+      {
+            "q": "28. Menurut Daniel Mazmanian dan Paul Sabatier, suatu masalah publik lebih mudah diimplementasikan apabila...",
+            "opts": [
+                  "A. Mengubah perilaku ratusan juta warga sekaligus",
+                  "B. Sasaran perubahan perilakunya spesifik, terukur, dan tersedia teknologi penyelesaiannya (tractability of the problem)",
+                  "C. Undang-undangnya tidak mencantumkan sanksi",
+                  "D. Tidak ada lembaga pengawas"
+            ],
+            "ans": 1,
+            "exp": "Mazmanian & Sabatier membagi 3 kelompok variabel: mudah-tidaknya masalah dikendalikan, kemampuan UU menstrukturkan proses, dan faktor non-statutori."
+      },
+      {
+            "q": "29. Perbedaan utama antara 'Monitoring' (pemantauan) dan 'Evaluasi' kebijakan terletak pada...",
+            "opts": [
+                  "A. Monitoring menilai nilai manfaat akhir, evaluasi hanya menghitung kehadiran",
+                  "B. Monitoring melacak kesesuaian proses/progres selama program berjalan; evaluasi menilai hasil, dampak, serta nilai manfaat kebijakan",
+                  "C. Keduanya hanya dilakukan setelah program selesai",
+                  "D. Monitoring dilakukan oleh BPK, evaluasi oleh LSM"
+            ],
+            "ans": 1,
+            "exp": "Monitoring fokus pada kontrol proses berjalan (apakah sesuai rencana?), sedangkan evaluasi menilai pencapaian nilai dan dampak."
+      },
+      {
+            "q": "30. Dalam 6 kriteria evaluasi kebijakan William N. Dunn, kriteria yang menanyakan 'Apakah hasil kebijakan yang dicapai benar-benar cukup untuk memecahkan akar masalah?' adalah...",
+            "opts": [
+                  "A. Efektivitas",
+                  "B. Efisiensi",
+                  "C. Kecukupan (Adequacy)",
+                  "D. Responsivitas"
+            ],
+            "ans": 2,
+            "exp": "Adequacy (kecukupan) mengukur seberapa jauh tingkat efektivitas mampu memuaskan kebutuhan/masalah dasar."
+      },
+      {
+            "q": "31. Kriteria evaluasi Dunn yang mengukur sejauh mana biaya dan manfaat kebijakan terdistribusi secara adil kepada berbagai kelompok masyarakat (khususnya kelompok rentan) adalah...",
+            "opts": [
+                  "A. Efisiensi",
+                  "B. Perataan / Keadilan (Equity)",
+                  "C. Efektivitas",
+                  "D. Kelayakan Teknis"
+            ],
+            "ans": 1,
+            "exp": "Equity menilai keadilan distribusi manfaat dan beban antarkelompok masyarakat."
+      },
+      {
+            "q": "32. Ketika pemerintah sukses membagi bansos 100% sesuai jadwal (efektif), namun warga penerima mengeluh karena isi paket tidak sesuai kebutuhan gizi mereka, maka kebijakan tersebut rendah pada kriteria...",
+            "opts": [
+                  "A. Efisiensi",
+                  "B. Responsivitas (Responsiveness)",
+                  "C. Legalitas",
+                  "D. Transmisi"
+            ],
+            "ans": 1,
+            "exp": "Responsivitas mengukur apakah hasil kebijakan benar-benar memuaskan preferensi/kebutuhan kelompok sasaran."
+      },
+      {
+            "q": "33. Kriteria evaluasi Dunn yang tidak hanya menanyakan 'apakah cara kerja sudah benar', melainkan mempertanyakan secara mendasar 'apakah tujuan kebijakan itu sendiri layak dan bernilai bagi masyarakat?' adalah...",
+            "opts": [
+                  "A. Efisiensi",
+                  "B. Ketepatan (Appropriateness)",
+                  "C. Kecukupan",
+                  "D. Efektivitas"
+            ],
+            "ans": 1,
+            "exp": "Appropriateness menguji kelayakan substantif dan nilai moral dari tujuan kebijakan itu sendiri."
+      },
+      {
+            "q": "34. Pendekatan evaluasi Dunn yang hanya menggunakan teknik statistik deskriptif untuk melaporkan hasil tanpa pernah menguji nilai atau tujuan kebijakan secara kritis disebut...",
+            "opts": [
+                  "A. Evaluasi Formal",
+                  "B. Evaluasi Semu (Pseudo-Evaluation)",
+                  "C. Evaluasi Keputusan Teoritis",
+                  "D. Evaluasi Partisipatif"
+            ],
+            "ans": 1,
+            "exp": "Evaluasi semu mengasumsikan ukuran manfaat sudah disepakati dan tidak mempertanyakan nilai/tujuan dasar."
+      },
+      {
+            "q": "35. Evaluasi yang menggunakan peraturan perundang-undangan dan target dokumen resmi program sebagai tolok ukur penilaian kinerja kebijakan disebut...",
+            "opts": [
+                  "A. Evaluasi Semu",
+                  "B. Evaluasi Formal",
+                  "C. Evaluasi Intuitif",
+                  "D. Agenda Setting"
+            ],
+            "ans": 1,
+            "exp": "Evaluasi formal menilai pencapaian berdasarkan tujuan formal yang diumumkan dalam UU/dokumen program."
+      },
+      {
+            "q": "36. Evaluasi Keputusan Teoritis (Decision-Theoretic Evaluation) berupaya mengatasi kelemahan evaluasi semu dan formal dengan cara...",
+            "opts": [
+                  "A. Menolak seluruh data kuantitatif",
+                  "B. Menggali secara eksplisit tujuan tersembunyi dan nilai dari beragam pemangku kepentingan",
+                  "C. Menghapus partisipasi warga",
+                  "D. Mempercepat pengesahan anggaran"
+            ],
+            "ans": 1,
+            "exp": "Evaluasi keputusan teoritis memetakan nilai/tujuan implisit maupun eksplisit berbagai aktor sebelum mengukur hasil."
+      },
+      {
+            "q": "37. Sifat utama dari tahap perumusan Rekomendasi Kebijakan dalam analisis kebijakan adalah bersifat...",
+            "opts": [
+                  "A. Deskriptif murni",
+                  "B. Preskriptif (menganjurkan tindakan terbaik yang seharusnya diambil)",
+                  "C. Retrospektif saja",
+                  "D. Apolitis tanpa nilai"
+            ],
+            "ans": 1,
+            "exp": "Rekomendasi kebijakan bersifat preskriptif karena memadukan fakta dan nilai untuk advokasi aksi kebijakan."
+      },
+      {
+            "q": "38. Pendekatan SMART dalam menyusun rekomendasi kebijakan agar dapat langsung dieksekusi oleh birokrasi merupakan akronim dari...",
+            "opts": [
+                  "A. Simple, Modern, Active, Real, Technical",
+                  "B. Specific, Measurable, Achievable, Relevant, Time-bound",
+                  "C. Strategic, Moral, Accountable, Rational, Transparent",
+                  "D. Systematic, Managed, Audited, Reliable, Timely"
+            ],
+            "ans": 1,
+            "exp": "SMART (Specific, Measurable, Achievable, Relevant, Time-bound) menjamin rekomendasi operasional dan terukur."
+      },
+      {
+            "q": "39. Seorang analis kebijakan yang bersedia memanipulasi asumsi dan data demi membenarkan keinginan sponsor politik atau pemilik modal disebut terjebak dalam peran tidak etis sebagai...",
+            "opts": [
+                  "A. Trustee of Public Interest",
+                  "B. Technocratic Hired Gun",
+                  "C. Policy Entrepreneur",
+                  "D. Street-Level Bureaucrat"
+            ],
+            "ans": 1,
+            "exp": "Hired Gun melacurkan integritas ilmiah demi melayani kepentingan sempit pemberi dana/penguasa."
+      },
+      {
+            "q": "40. Menurut tangga partisipasi Sherry Arnstein (1969), sosialisasi satu arah di mana warga hanya diberi tahu tanpa diberi kesempatan berdialog berada pada kategori...",
+            "opts": [
+                  "A. Citizen Control",
+                  "B. Partnership",
+                  "C. Tokenism (Informing)",
+                  "D. Delegated Power"
+            ],
+            "ans": 2,
+            "exp": "Informing (sekadar memberi tahu tanpa dialog nyata) berada di level Tokenism."
+      },
+      {
+            "q": "41. Prinsip Perbedaan (Difference Principle) dalam teori keadilan sosial John Rawls menuntut agar kebijakan publik yang tidak merata hanya dapat diterima apabila...",
+            "opts": [
+                  "A. Menguntungkan konglomerat nasional terlebih dahulu",
+                  "B. Memberikan manfaat terbesar bagi kelompok masyarakat yang paling rentan/kurang beruntung",
+                  "C. Mempercepat proyek fisik tanpa ganti rugi",
+                  "D. Mengurangi anggaran pendidikan"
+            ],
+            "ans": 1,
+            "exp": "John Rawls menegaskan keadilan sosial mensyaratkan keberpihakan protektif pada the least advantaged."
+      },
+      {
+            "q": "42. Tantangan etika utama ketika seorang analis kebijakan diminta pimpinan untuk 'mengamankan hasil kajian' agar proyek strategis tidak tertunda disebut...",
+            "opts": [
+                  "A. Tekanan Politik (Political Pressure)",
+                  "B. Defisit Anggaran",
+                  "C. Fragmentasi Data",
+                  "D. Error Statistik"
+            ],
+            "ans": 0,
+            "exp": "Tekanan politik berusaha mengarahkan kesimpulan analis agar sesuai selera penguasa."
+      },
+      {
+            "q": "43. Mekanisme terbaik untuk mencegah penyalahgunaan kewenangan serta menjaga akuntabilitas dalam proses perumusan rekomendasi kebijakan adalah...",
+            "opts": [
+                  "A. Menutup seluruh dokumen kajian dari publik",
+                  "B. Transparansi asumsi/metode, kode etik profesi, dan pelibatan partisipasi publik yang bermakna",
+                  "C. Mengurangi jumlah analis",
+                  "D. Menghilangkan tahap evaluasi"
+            ],
+            "ans": 1,
+            "exp": "PPT Sesi 8 menegaskan 3 solusi etika: kultur integritas, pedoman kode etik, dan pelibatan publik/transparansi."
+      },
+      {
+            "q": "44. Kebijakan pembatasan kuota antrean digital harian (misal 25 keping/hari) tanpa menyediakan loket afirmasi bagi lansia yang tidak memiliki ponsel pintar dapat dikritik menggunakan kriteria...",
+            "opts": [
+                  "A. Efisiensi teknis",
+                  "B. Keadilan / Equity dan Digital Divide",
+                  "C. Kelembagaan formal",
+                  "D. Cost-Benefit"
+            ],
+            "ans": 1,
+            "exp": "Kebijakan digital murni tanpa afirmasi berisiko menciptakan digital exclusion bagi lansia dan melanggar prinsip equity."
+      },
+      {
+            "q": "45. Dalam kasus relokasi pemukiman akibat Proyek Strategis Nasional, pendekatan rekomendasi etis yang mengganti uang tunai sekali putus dengan penyediaan rusunawa serta pelatihan UMKM disebut...",
+            "opts": [
+                  "A. Forced Eviction",
+                  "B. Livelihood Restoration Plan (Pemulihan Kehidupan)",
+                  "C. Pseudo-Evaluation",
+                  "D. Muddling Through"
+            ],
+            "ans": 1,
+            "exp": "Livelihood Restoration memastikan taraf hidup dan mata pencaharian warga terdampak tidak memburuk pasca-relokasi."
+      },
+      {
+            "q": "46. Dokumen ringkas yang disusun oleh analis kebijakan untuk menyampaikan temuan kunci dan opsi rekomendasi secara cepat kepada pengambil keputusan politik disebut...",
+            "opts": [
+                  "A. Disertasi Doktoral",
+                  "B. Policy Brief (Risalah Kebijakan)",
+                  "C. Notulen Rapat",
+                  "D. Peraturan Menteri"
+            ],
+            "ans": 1,
+            "exp": "Policy Brief adalah instrumen komunikasi strategis yang ringkas, padat bukti, dan berorientasi solusi."
+      },
+      {
+            "q": "47. Kebijakan publik yang berhasil diadopsi menjadi Undang-Undang oleh DPR dan Presiden dapat mengalami 'Implementation Gap' apabila...",
+            "opts": [
+                  "A. Sudah disosialisasikan secara luas",
+                  "B. Kesenjangan antara tujuan ideal regulasi (das sollen) dan kenyataan kapasitas pelaksanaan di lapangan (das sein)",
+                  "C. Memiliki banyak halaman penjelasan",
+                  "D. Didukung oleh seluruh LSM"
+            ],
+            "ans": 1,
+            "exp": "Implementation Gap adalah jurang pemisah antara desain kebijakan di atas kertas dan realitas eksekusi lapangan."
+      },
+      {
+            "q": "48. Kebijakan deregulasi atau penghapusan syarat fotokopi KTP fisik karena data kependudukan sudah terintegrasi secara elektronik (IKD) mencerminkan upaya peningkatan...",
+            "opts": [
+                  "A. Fragmentasi birokrasi",
+                  "B. Efisiensi dan penyederhanaan struktur birokrasi (SOP)",
+                  "C. Kesalahan Tipe III",
+                  "D. Konflik peran"
+            ],
+            "ans": 1,
+            "exp": "Penghapusan duplikasi dokumen fisik memangkas biaya transaksi dan meningkatkan efisiensi SOP."
+      },
+      {
+            "q": "49. Apabila pemerintah daerah menerbitkan peraturan tanpa melakukan kajian naskah akademik dan uji publik terlebih dahulu, kelemahan utama kebijakan tersebut terletak pada tidak adanya...",
+            "opts": [
+                  "A. Evidence-based policy (kebijakan berbasis bukti)",
+                  "B. Coercive power",
+                  "C. Budget surplus",
+                  "D. Model Elitis"
+            ],
+            "ans": 0,
+            "exp": "Evidence-based policy menuntut setiap kebijakan ditopang riset empiris, data valid, dan konsultasi publik."
+      },
+      {
+            "q": "50. Dalam analisis kebijakan komparatif sebelum dan sesudah inovasi pelayanan publik, peningkatan kepastian waktu layanan serta hilangnya praktik percaloan menunjukkan tercapainya tujuan...",
+            "opts": [
+                  "A. Efektivitas dan Transparansi Pelayanan Publik",
+                  "B. Kesenjangan Digital",
+                  "C. Sentralisasi penuh",
+                  "D. Groupthink"
+            ],
+            "ans": 0,
+            "exp": "Kepastian layanan dan hilangnya calo membuktikan efektivitas operasional serta akuntabilitas tata kelola."
+      }
+];
+
+
+    let userAnswers = {};
+    let quizFilter = 'all';
+
+    function renderQuizHTML() {
+      const answeredCount = Object.keys(userAnswers).length;
+      const correctCount = Object.entries(userAnswers).filter(([qi, oi]) => quizData[qi].ans === oi).length;
+      const pct = answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0;
+
+      const filtered = quizData.map((item, qi) => ({ item, qi })).filter(({ item, qi }) => {
+        if (quizFilter === 'unanswered') return userAnswers[qi] === undefined;
+        if (quizFilter === 'wrong') return userAnswers[qi] !== undefined && userAnswers[qi] !== item.ans;
+        return true;
+      });
+
+      return `
+        <div class="space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border,#cbd5e1)] pb-3">
+            <div>
+              <h2 class="text-xl font-bold">Simulasi Kuis UAS (${quizData.length} Soal)</h2>
+              <p class="text-xs text-[var(--muted-foreground,#475569)]">Dijawab: <strong>${answeredCount}/${quizData.length}</strong> • Benar: <strong class="text-emerald-600">${correctCount}</strong> • Akurasi: <strong>${pct}%</strong></p>
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5 text-xs">
+              <button onclick="setFilter('all')" class="px-2.5 py-1 rounded-lg border ${quizFilter==='all'?'bg-[var(--primary,#1d4ed8)] text-white border-transparent font-bold':'border-[var(--border,#cbd5e1)]'}">Semua (${quizData.length})</button>
+              <button onclick="setFilter('unanswered')" class="px-2.5 py-1 rounded-lg border ${quizFilter==='unanswered'?'bg-[var(--primary,#1d4ed8)] text-white border-transparent font-bold':'border-[var(--border,#cbd5e1)]'}">Belum (${quizData.length - answeredCount})</button>
+              <button onclick="setFilter('wrong')" class="px-2.5 py-1 rounded-lg border ${quizFilter==='wrong'?'bg-[var(--primary,#1d4ed8)] text-white border-transparent font-bold':'border-[var(--border,#cbd5e1)]'}">Salah</button>
+              <button onclick="resetQuiz()" class="px-2.5 py-1 rounded-lg border border-rose-400 text-rose-600 hover:bg-rose-50 font-semibold">Reset</button>
+            </div>
+          </div>
+          <div class="space-y-3 max-h-[440px] overflow-y-auto pr-1">
+            ${filtered.length === 0 ? '<p class="text-xs text-center py-8 text-[var(--muted-foreground,#475569)]">Tidak ada soal pada filter ini.</p>' : filtered.map(({ item, qi }) => {
+              const ua = userAnswers[qi];
+              const isDone = ua !== undefined;
+              return `
+              <div class="p-3.5 rounded-xl border border-[var(--border,#cbd5e1)] bg-[var(--background,#f8fafc)] space-y-2 text-xs">
+                <p class="font-semibold leading-relaxed">${item.q}</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                  ${item.opts.map((opt, oi) => {
+                    let cls = "border-[var(--border,#cbd5e1)] hover:bg-[var(--secondary,#e2e8f0)]";
+                    if (isDone) {
+                      if (oi === item.ans) cls = "border-emerald-600 bg-emerald-600 text-white font-bold";
+                      else if (oi === ua && ua !== item.ans) cls = "border-rose-600 bg-rose-600 text-white";
+                      else cls = "border-[var(--border,#cbd5e1)] opacity-60";
+                    }
+                    return `<button ${isDone?'disabled':''} onclick="checkAns(${qi}, ${oi})" class="text-left px-3 py-1.5 rounded-lg border transition ${cls}">${opt}</button>`;
+                  }).join('')}
+                </div>
+                ${isDone ? `<p class="text-[11px] p-2 rounded bg-[var(--secondary,#e2e8f0)]">${ua === item.ans ? '✓ Benar! ' : '✗ Kurang tepat. '}${item.exp}</p>` : ''}
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`;
+    }
+
+    function setFilter(f) { quizFilter = f; renderPage(); }
+    function resetQuiz() { userAnswers = {}; quizFilter = 'all'; renderPage(); }
+    function checkAns(qi, oi) { userAnswers[qi] = oi; renderPage(); }
+
+    let current = 0;
+    function renderPage() {
+      const container = document.getElementById('pageContent');
+      container.classList.remove('flip-enter');
+      void container.offsetWidth;
+      container.classList.add('flip-enter');
+      container.innerHTML = pages[current].render();
+      document.getElementById('pageBadge').textContent = `${current + 1} / ${pages.length}`;
+      document.getElementById('progressBar').style.width = `${((current + 1) / pages.length) * 100}%`;
+      document.getElementById('prevBtn').disabled = current === 0;
+      document.getElementById('nextBtn').disabled = current === pages.length - 1;
+      renderToc();
+    }
+
+    function renderToc() {
+      const toc = document.getElementById('tocDrawer');
+      toc.innerHTML = pages.map((p, idx) => `
+        <button onclick="goTo(${idx})" class="text-left p-2 rounded-lg border text-xs transition ${idx === current ? 'border-[var(--primary)] bg-[var(--secondary)] font-bold' : 'border-[var(--border)] hover:bg-[var(--secondary)]'}">
+          <div class="text-[10px] text-[var(--muted-foreground)]">${p.tag}</div>
+          <div class="truncate">${p.title}</div>
+        </button>
+      `).join('');
+    }
+
+    function toggleToc() { document.getElementById('tocDrawer').classList.toggle('hidden'); }
+    function goTo(idx) { current = idx; renderPage(); document.getElementById('tocDrawer').classList.add('hidden'); }
+    function nextPage() { if (current < pages.length - 1) { current++; renderPage(); } }
+    function prevPage() { if (current > 0) { current--; renderPage(); } }
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') nextPage();
+      if (e.key === 'ArrowLeft') prevPage();
+    });
+
+    renderPage();
+  </script>
+</body>
+</html>

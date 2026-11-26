@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flipbook UAS — FSAP4208 Perilaku Organisasi</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    /* Multi-device fallback vars without overriding :root in Antigravity */
+    body {
+      background-color: var(--background, #f8fafc);
+      color: var(--foreground, #0f172a);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .fb-card { background-color: var(--card, #ffffff); border-color: var(--border, #cbd5e1); }
+    .fb-muted { color: var(--muted-foreground, #475569); }
+    .fb-sec { background-color: var(--secondary, #e2e8f0); color: var(--secondary-foreground, #0f172a); }
+    .fb-pri { background-color: var(--primary, #1d4ed8); color: var(--primary-foreground, #ffffff); }
+    @keyframes pageFlip {
+      0% { opacity: 0; transform: perspective(1200px) rotateY(-8deg) scale(0.98); }
+      100% { opacity: 1; transform: perspective(1200px) rotateY(0deg) scale(1); }
+    }
+    .flip-enter { animation: pageFlip 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+  </style>
+</head>
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased min-h-screen p-4 md:p-6">
+  <div class="max-w-5xl mx-auto space-y-4">
+    <header class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 flex flex-wrap items-center justify-between gap-3 shadow-sm">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-[var(--primary)] text-[var(--primary-foreground)]">FSAP4208 / ADPU4431</span>
+          <span class="text-xs font-medium text-[var(--muted-foreground)]">Minggu, 29 Nov 2026 • 09:45–11:15 WIB • UOLP UT</span>
+        </div>
+        <h1 class="text-lg font-bold mt-1">Flipbook Rangkuman UAS: Perilaku Organisasi</h1>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="toggleToc()" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[var(--border)] hover:bg-[var(--secondary)] transition">Daftar Halaman</button>
+        <span id="pageBadge" class="px-3 py-1.5 text-xs font-mono font-bold rounded-lg bg-[var(--secondary)] text-[var(--secondary-foreground)]">1 / 10</span>
+      </div>
+    </header>
+
+    <div class="w-full h-1.5 bg-[var(--secondary)] rounded-full overflow-hidden">
+      <div id="progressBar" class="h-full bg-[var(--primary)] transition-all duration-300" style="width: 10%"></div>
+    </div>
+
+    <nav id="tocDrawer" class="hidden bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2"></nav>
+
+    <main class="relative bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-md overflow-hidden">
+      <div class="h-1.5 w-full bg-gradient-to-r from-[var(--chart-3)] via-[var(--primary)] to-[var(--chart-5)]"></div>
+      <div id="pageContent" class="p-6 md:p-8 min-h-[520px] flip-enter"></div>
+      <footer class="border-t border-[var(--border)] px-6 py-3.5 flex items-center justify-between bg-[var(--sidebar)]">
+        <button id="prevBtn" onclick="prevPage()" class="px-4 py-2 text-xs font-semibold rounded-lg border border-[var(--border)] bg-[var(--card)] hover:bg-[var(--secondary)] disabled:opacity-40 transition">← Sebelumnya</button>
+        <div class="text-xs text-[var(--muted-foreground)] hidden sm:block">Gunakan panah <kbd class="px-1.5 py-0.5 border border-[var(--border)] rounded">←</kbd> <kbd class="px-1.5 py-0.5 border border-[var(--border)] rounded">→</kbd></div>
+        <button id="nextBtn" onclick="nextPage()" class="px-4 py-2 text-xs font-semibold rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 disabled:opacity-40 transition">Berikutnya →</button>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    const pages = [
+      {
+        title: "Sampul & Info Ujian",
+        tag: "SAMPUL",
+        render: () => `
+          <div class="flex flex-col justify-between h-full space-y-6 py-4">
+            <div class="space-y-3">
+              <span class="inline-block px-3 py-1 text-xs font-bold rounded-full bg-[var(--secondary)] text-[var(--primary)]">PERSIAPAN UAS UOLP • SESI PENUTUP</span>
+              <h2 class="text-3xl font-extrabold tracking-tight">Perilaku Organisasi</h2>
+              <p class="text-sm text-[var(--muted-foreground)]">Kode Mata Kuliah: <strong>FSAP4208</strong> | Rujukan BMP: <strong>ADPU4431 (9 Modul)</strong></p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-2">
+                <h3 class="text-sm font-bold text-[var(--primary)]">Detail Pelaksanaan Ujian</h3>
+                <ul class="text-xs space-y-1.5 text-[var(--muted-foreground)]">
+                  <li>• <strong>Hari/Tanggal:</strong> Minggu, 29 November 2026</li>
+                  <li>• <strong>Waktu:</strong> Sesi 2 (09:45 – 11:15 WIB)</li>
+                  <li>• <strong>Lokasi:</strong> UPJ Bintaro, Gedung B Lt. 8 (Ruang 5 / Kursi 20)</li>
+                  
+                </ul>
+              </div>
+              <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-2">
+                <h3 class="text-sm font-bold text-[var(--success)]">Sinergi dengan FSAP4401</h3>
+                <p class="text-xs text-[var(--muted-foreground)] leading-relaxed">Beberapa materi FSAP4208 beririsan erat dengan Kepemimpinan (FSAP4401), khususnya <strong>Gaya Kepemimpinan, Kekuasaan & Wewenang, Pengambilan Keputusan, serta Perubahan Organisasi</strong>. Pelajari fokus pembedanya seperti <em>Teori Motivasi & Evaluasi Kinerja</em>!</p>
+              </div>
+            </div>
+          </div>`
+      },
+      {
+        title: "Modul 1: Konsep Dasar PO",
+        tag: "MODUL 1",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Modul 1: Konsep Dasar Perilaku Organisasi</h2>
+              <span class="text-xs font-mono text-[var(--muted-foreground)]">Robbins & Judge</span>
+            </div>
+            <p class="text-sm leading-relaxed"><strong>Perilaku Organisasi (OB)</strong> adalah bidang studi yang menyelidiki pengaruh yang dimiliki oleh individu, kelompok, dan struktur terhadap perilaku dalam organisasi demi meningkatkan efektivitas organisasi.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)]">
+                <strong class="text-sm text-[var(--primary)]">1. Tingkat Individu</strong>
+                <p class="mt-1">Persepsi, kepribadian, nilai, sikap kerja, pembelajaran, dan motivasi kerja.</p>
+              </div>
+              <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)]">
+                <strong class="text-sm text-[var(--primary)]">2. Tingkat Kelompok</strong>
+                <p class="mt-1">Dinamika kelompok, komunikasi, kepemimpinan, kekuasaan, konflik, dan pengambilan keputusan tim.</p>
+              </div>
+              <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)]">
+                <strong class="text-sm text-[var(--primary)]">3. Tingkat Sistem</strong>
+                <p class="mt-1">Struktur organisasi, budaya organisasi, kebijakan SDM, dan manajemen perubahan.</p>
+              </div>
+            </div>
+          </div>`
+      },
+      {
+        title: "Modul 2: Individu & Motivasi",
+        tag: "MODUL 2 (WAJIB!)",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Modul 2: Perilaku Individu & Teori Motivasi</h2>
+              <span class="text-xs font-mono text-[var(--primary)]">Paling Sering Keluar!</span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-xs border border-[var(--border)] rounded-lg overflow-hidden">
+                <thead class="bg-[var(--secondary)]">
+                  <tr><th class="p-2 text-left">Teori Motivasi</th><th class="p-2 text-left">Tokoh</th><th class="p-2 text-left">Konsep Inti</th></tr>
+                </thead>
+                <tbody class="divide-y divide-[var(--border)]">
+                  <tr><td class="p-2 font-semibold">Hierarki Kebutuhan</td><td class="p-2">Abraham Maslow</td><td class="p-2">5 tingkat: Fisiologis → Rasa Aman → Sosial → Penghargaan → Aktualisasi Diri.</td></tr>
+                  <tr><td class="p-2 font-semibold">Teori Dua Faktor</td><td class="p-2">Frederick Herzberg</td><td class="p-2"><strong>Hygiene</strong> (gaji, kondisi kerja — cegah kecewa) vs <strong>Motivator</strong> (prestasi, pengakuan — picu semangat).</td></tr>
+                  <tr><td class="p-2 font-semibold">Teori X & Teori Y</td><td class="p-2">Douglas McGregor</td><td class="p-2">X = pegawai malas butuh kontrol ketat; Y = pegawai kreatif & bertanggung jawab.</td></tr>
+                  <tr><td class="p-2 font-semibold">Teori Harapan</td><td class="p-2">Victor Vroom</td><td class="p-2">Motivasi = <em>Expectancy</em> (usaha→hasil) × <em>Instrumentality</em> (hasil→imbalan) × <em>Valence</em> (nilai imbalan).</td></tr>
+                  <tr><td class="p-2 font-semibold">Teori Keadilan</td><td class="p-2">Stacy Adams</td><td class="p-2">Pegawai membandingkan rasio <em>Output/Input</em> dirinya dengan rekan kerja lain.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>`
+      },
+      {
+        title: "Modul 3: Gaya Kepemimpinan",
+        tag: "MODUL 3",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Modul 3: Gaya Kepemimpinan (Materi 3.1)</h2>
+              <span class="text-xs font-mono text-[var(--muted-foreground)]">Zaleznik & Robbins</span>
+            </div>
+            <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs space-y-2">
+              <h3 class="font-bold text-sm text-[var(--primary)]">Perbedaan Manajer vs Pemimpin (Abraham Zaleznik dalam Robbins)</h3>
+              <ul class="space-y-1.5">
+                <li>• <strong>Manajer:</strong> Bersikap impersonal/pasif terhadap tujuan, lahir dari kebutuhan mempertahankan keteraturan, memandang kerja sebagai proses penyeimbang kompromi.</li>
+                <li>• <strong>Pemimpin:</strong> Bersikap aktif & personal terhadap tujuan, membentuk gagasan baru, menginspirasi emosi dan perubahan mendasar.</li>
+              </ul>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--secondary)]">
+                <strong>Kontinum Kepemimpinan (Tannenbaum & Schmidt):</strong><br/>
+                Bergeser dari <em>Boss-centered</em> (otoriter penuh) menuju <em>Subordinate-centered</em> (kebebasan penuh bawahan).
+              </div>
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--secondary)]">
+                <strong>3 Keterampilan Manajer (Robert Katz):</strong><br/>
+                (1) <em>Technical Skill</em> (dominan di level bawah), (2) <em>Human Skill</em> (penting di semua level), (3) <em>Conceptual Skill</em> (dominan di manajemen puncak).
+              </div>
+            </div>
+          </div>`
+      },
+      {
+        title: "Modul 4: Kekuasaan & Wewenang",
+        tag: "MODUL 4",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Modul 4: Kekuasaan dan Wewenang (Materi 4.1)</h2>
+              <span class="text-xs font-mono text-[var(--muted-foreground)]">Power vs Authority</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-2">
+                <h3 class="font-bold text-sm text-[var(--primary)]">Kekuasaan (Power) vs Wewenang (Authority)</h3>
+                <p>• <strong>Kekuasaan (Power):</strong> Kapasitas memengaruhi perilaku orang lain agar sesuai keinginan pemilik kuasa (tidak harus lewat jabatan).</p>
+                <p>• <strong>Wewenang (Authority):</strong> Hak resmi (<em>legitimate</em>) yang melekat pada posisi jabatan struktural untuk memerintah.</p>
+              </div>
+              <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-2">
+                <h3 class="font-bold text-sm text-[var(--primary)]">Politik dalam Organisasi</h3>
+                <p>Aktivitas memperoleh dan menggunakan kekuasaan di luar jalur formal untuk memengaruhi distribusi keuntungan/kerugian di dalam organisasi (misal: koalisi, lobi, kendali informasi).</p>
+              </div>
+            </div>
+          </div>`
+      },
+      {
+        title: "Modul 5: Hubungan Antarmanusia",
+        tag: "MODUL 5",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Modul 5: Hubungan Antarmanusia (Human Relations)</h2>
+              <span class="text-xs font-mono text-[var(--muted-foreground)]">Elton Mayo / Hawthorne</span>
+            </div>
+            <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs space-y-2">
+              <h3 class="font-bold text-sm text-[var(--primary)]">Esensi Hubungan Antarmanusia</h3>
+              <p>Unsur manusia adalah aset hakiki organisasi. Studi <strong>Hawthorne (Elton Mayo)</strong> membuktikan bahwa produktivitas kerja tidak hanya ditentukan oleh pencahayaan/gaji fisik, melainkan oleh <strong>perhatian sosial, norma kelompok, dan kepuasan psikologis pekerja</strong>.</p>
+            </div>
+            <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--secondary)] text-xs space-y-1">
+              <strong>Prinsip Utama Human Relations Efektif:</strong><br/>
+              1. Saling menghargai martabat individu (bukan sekadar mesin produksi).<br/>
+              2. Komunikasi empatik dan terbuka.<br/>
+              3. Keseimbangan antara kepentingan organisasi dan kesejahteraan psikologis pegawai.
+            </div>
+          </div>`
+      },
+      {
+        title: "Modul 6 & 7: Komunikasi & Keputusan",
+        tag: "MODUL 6 & 7",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Modul 6 & 7: Komunikasi & Pengambilan Keputusan</h2>
+              <span class="text-xs font-mono text-[var(--muted-foreground)]">MATERI 6</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-2">
+                <h3 class="font-bold text-sm text-[var(--primary)]">Komunikasi Organisasi</h3>
+                <p><strong>Alur:</strong> Pengirim → Encoding → Saluran → Decoding → Penerima → Feedback.</p>
+                <p><strong>Arah Komunikasi:</strong> <em>Downward</em> (instruksi atasan), <em>Upward</em> (laporan bawahan), <em>Lateral/Horizontal</em> (koordinasi setara).</p>
+                <p><strong>Hambatan:</strong> Penyaringan (<em>filtering</em>), persepsi selektif, kelebihan beban info (<em>overload</em>), bahasa teknis.</p>
+              </div>
+              <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-2">
+                <h3 class="font-bold text-sm text-[var(--primary)]">Pengambilan Keputusan Organisasi</h3>
+                <p><strong>Bias Keputusan:</strong> <em>Overconfidence</em>, <em>Anchoring Bias</em> (terpaku info awal), <em>Confirmation Bias</em>, dan <em>Escalation of Commitment</em> (tetap bertahan pada keputusan gagal).</p>
+              </div>
+            </div>
+          </div>`
+      },
+      {
+        title: "Modul 8 & 9: Dinamika Kelompok & Kinerja",
+        tag: "MODUL 8 & 9",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Modul 8 & 9: Dinamika Kelompok, Budaya & Evaluasi</h2>
+              <span class="text-xs font-mono text-[var(--muted-foreground)]">Materi 7.1 & 8.1</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-2">
+                <h3 class="font-bold text-sm text-[var(--primary)]">Dinamika Kelompok & Konflik</h3>
+                <p><strong>Social Loafing:</strong> Kecenderungan individu bekerja lebih santai saat berada dalam kelompok dibanding bekerja sendiri.</p>
+                <p><strong>5 Gaya Mengatasi Konflik (Thomas-Kilmann):</strong> Competing, Collaborating (Win-Win), Compromising, Avoiding, Accommodating.</p>
+              </div>
+              <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-2">
+                <h3 class="font-bold text-sm text-[var(--primary)]">Evaluasi Kinerja & Budaya Organisasi</h3>
+                <p><strong>Metode Evaluasi Kinerja (Materi 8.1):</strong> <em>Graphic Rating Scale</em>, <em>BARS (Behaviorally Anchored Rating Scales)</em>, <em>MBO (Management by Objectives)</em>, dan <strong>Penilaian 360 Derajat</strong> (atasan, rekan, bawahan, diri sendiri).</p>
+              </div>
+            </div>
+          </div>`
+      },
+      {
+        title: "Cheat-Sheet & Jebakan Soal",
+        tag: "CHEAT-SHEET",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Cheat-Sheet Cepat FSAP4208</h2>
+              <span class="text-xs font-mono text-[var(--primary)]">Hafalan Kilat</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-1">
+                <strong class="text-[var(--primary)]">Jebakan Teori Herzberg (Paling Sering Ditanya!):</strong>
+                <p class="mt-1">Gaji tinggi dan AC ruangan yang dingin menurut Herzberg adalah <strong>Faktor Hygiene</strong> — ketiadaannya membuat kecewa, tapi keberadaannya <em>tidak otomatis memotivasi kerja tinggi</em>. Yang memicu motivasi sejati adalah <strong>Faktor Motivator</strong> (tanggung jawab, prestasi, pengakuan).</p>
+              </div>
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-1">
+                <strong class="text-[var(--warning)]">Pembeda Konsep Kelompok:</strong>
+                <ul class="space-y-1 mt-1">
+                  <li>• <strong>Social Loafing:</strong> Kemalasan sosial dalam tim besar.</li>
+                  <li>• <strong>Groupthink:</strong> Takut beda pendapat demi harmoni semu.</li>
+                  <li>• <strong>Hawthorne Effect:</strong> Pekerja bekerja lebih baik karena merasa diperhatikan peneliti/pimpinan.</li>
+                </ul>
+              </div>
+            </div>
+          </div>`
+      },
+      {
+        title: "Simulasi Kuis UAS (50 Soal)",
+        tag: "LATIHAN SOAL",
+        render: () => renderQuizHTML()
+      }
+    ];
+
+    const quizData = [
+      {
+            "q": "1. Studi sistematis mengenai bagaimana perilaku individu, kelompok, dan struktur memengaruhi efektivitas kerja dalam organisasi disebut...",
+            "opts": [
+                  "A. Manajemen Pemasaran",
+                  "B. Perilaku Organisasi (Organizational Behavior)",
+                  "C. Akuntansi Biaya",
+                  "D. Hukum Tata Negara"
+            ],
+            "ans": 1,
+            "exp": "Perilaku Organisasi mempelajari perilaku manusia dalam setting organisasi pada 3 level analisis."
+      },
+      {
+            "q": "2. Tiga tingkatan (level) analisis utama dalam mempelajari Perilaku Organisasi menurut Robbins & Judge adalah...",
+            "opts": [
+                  "A. Tingkat Lokal, Nasional, Internasional",
+                  "B. Tingkat Individu, Tingkat Kelompok, dan Tingkat Sistem Organisasi",
+                  "C. Tingkat Input, Proses, Output",
+                  "D. Tingkat Eksekutif, Legislatif, Yudikatif"
+            ],
+            "ans": 1,
+            "exp": "OB menganalisis perilaku dari level individu → kelompok → sistem organisasi secara menyeluruh."
+      },
+      {
+            "q": "3. Pengertian organisasi sebagai unit sosial yang dikoordinasikan secara sadar, terdiri dari dua orang atau lebih, dan berfungsi secara relatif terus-menerus untuk mencapai tujuan bersama dikemukakan oleh...",
+            "opts": [
+                  "A. Stephen P. Robbins",
+                  "B. Adam Smith",
+                  "C. John Locke",
+                  "D. Karl Marx"
+            ],
+            "ans": 0,
+            "exp": "Definisi klasik Robbins menekankan koordinasi sadar dan tujuan bersama berkelanjutan."
+      },
+      {
+            "q": "4. Tujuan utama mempelajari perilaku individu dan kelompok bagi manajer/administrator publik adalah agar mampu menjelaskan, memprediksi, dan...",
+            "opts": [
+                  "A. Menggantikan seluruh manusia dengan robot",
+                  "B. Mengendalikan/mengarahkan perilaku kerja menuju produktivitas serta kepuasan pegawai",
+                  "C. Mengurangi gaji aparatur",
+                  "D. Menghindari komunikasi tatap muka"
+            ],
+            "ans": 1,
+            "exp": "3 tujuan ilmu perilaku organisasi: menjelaskan (explain), memprediksi (predict), dan mengendalikan (control/influence)."
+      },
+      {
+            "q": "5. Proses di mana individu mengorganisasikan dan menafsirkan kesan indrawi mereka untuk memberi makna pada lingkungannya disebut...",
+            "opts": [
+                  "A. Motivasi",
+                  "B. Persepsi (Perception)",
+                  "C. Konflik",
+                  "D. Delegasi"
+            ],
+            "ans": 1,
+            "exp": "Persepsi sering kali berbeda dari realitas objektif karena dipengaruhi pengalaman, minat, dan harapan individu."
+      },
+      {
+            "q": "6. Kesalahan persepsi ketika kita menilai seseorang secara keseluruhan hanya berdasarkan satu karakteristik tunggal (misal: hanya karena penampilannya rapi lalu dianggap pasti cerdas) disebut...",
+            "opts": [
+                  "A. Stereotyping",
+                  "B. Halo Effect",
+                  "C. Selective Perception",
+                  "D. Projection"
+            ],
+            "ans": 1,
+            "exp": "Halo Effect menarik kesimpulan umum atas individu hanya dari satu kesan positif/negatif tunggal."
+      },
+      {
+            "q": "7. Menilai seseorang berdasarkan anggapan umum terhadap kelompok tempat orang tersebut berasal (misal suku, gender, atau generasi) disebut...",
+            "opts": [
+                  "A. Halo Effect",
+                  "B. Stereotyping",
+                  "C. Attribution",
+                  "D. Reinforcement"
+            ],
+            "ans": 1,
+            "exp": "Stereotyping menggeneralisasi ciri kelompok kepada setiap individu anggota kelompok tersebut."
+      },
+      {
+            "q": "8. Tiga komponen pembentuk sikap (attitude) seseorang terhadap pekerjaan meliputi komponen kognitif (keyakinan), afektif (perasaan), dan...",
+            "opts": [
+                  "A. Behavioral / Konatif (kecenderungan bertindak)",
+                  "B. Finansial",
+                  "C. Struktural",
+                  "D. Yuridis"
+            ],
+            "ans": 0,
+            "exp": "Model ABC sikap: Affective (perasaan), Behavioral (niat bertindak), Cognitive (evaluasi/keyakinan)."
+      },
+      {
+            "q": "9. Menurut Abraham Maslow, urutan hierarki kebutuhan manusia dari tingkat paling dasar hingga puncak adalah...",
+            "opts": [
+                  "A. Sosial → Fisiologis → Aman → Penghargaan → Aktualisasi",
+                  "B. Fisiologis → Rasa Aman → Sosial/Afiliasi → Penghargaan → Aktualisasi Diri",
+                  "C. Aktualisasi → Aman → Sosial → Fisiologis → Penghargaan",
+                  "D. Rasa Aman → Sosial → Fisiologis → Aktualisasi → Penghargaan"
+            ],
+            "ans": 1,
+            "exp": "Piramide Maslow: Fisiologis (makan/gaji dasar) → Safety → Social → Esteem → Self-Actualization."
+      },
+      {
+            "q": "10. Dalam Teori Dua Faktor Frederick Herzberg, faktor seperti gaji pokok, keamanan kerja, dan kebijakan perusahaan termasuk dalam kategori...",
+            "opts": [
+                  "A. Motivator Factors",
+                  "B. Hygiene Factors (Faktor Pemeliharaan)",
+                  "C. Self-Actualization",
+                  "D. Expectancy"
+            ],
+            "ans": 1,
+            "exp": "Hygiene factors mencegah ketidakpuasan kerja, namun bukan pemacu utama motivasi intrinsik jangka panjang."
+      },
+      {
+            "q": "11. Yang termasuk ke dalam Faktor Motivator sejati menurut Frederick Herzberg adalah...",
+            "opts": [
+                  "A. Ruang kantor ber-AC dan tunjangan transport",
+                  "B. Prestasi kerja, pengakuan, pekerjaan yang menantang, dan kesempatan berkembang",
+                  "C. Hubungan administratif dengan satpam",
+                  "D. Jam istirahat siang"
+            ],
+            "ans": 1,
+            "exp": "Motivator berasal dari isi pekerjaan itu sendiri (intrinsic): achievement, recognition, responsibility, growth."
+      },
+      {
+            "q": "12. Manajer yang menganut asumsi Teori X dari Douglas McGregor memandang bahwa rata-rata pegawai...",
+            "opts": [
+                  "A. Kreatif dan senang bertanggung jawab",
+                  "B. Pada dasarnya malas, menghindari tanggung jawab, sehingga harus diawasi ketat dan dipaksa",
+                  "C. Mampu mengatur dirinya sendiri",
+                  "D. Selalu berinisiatif berinovasi"
+            ],
+            "ans": 1,
+            "exp": "Teori X berasumsi negatif terhadap sifat dasar pekerja (butuh pengawasan ketat); Teori Y berasumsi positif."
+      },
+      {
+            "q": "13. Dalam Teori Harapan (Expectancy Theory) Victor Vroom, keyakinan pegawai bahwa usaha kerasnya akan menghasilkan penilaian kinerja yang baik disebut...",
+            "opts": [
+                  "A. Valence",
+                  "B. Expectancy (Usaha → Kinerja)",
+                  "C. Instrumentality (Kinerja → Imbalan)",
+                  "D. Equity"
+            ],
+            "ans": 1,
+            "exp": "Vroom memiliki 3 tautan: Expectancy (effort-performance), Instrumentality (performance-reward), Valence (daya tarik reward)."
+      },
+      {
+            "q": "14. Sejauh mana seorang pegawai memandang nilai imbalan (misal promosi atau cuti) memang bernilai dan diinginkannya secara pribadi disebut dalam teori Vroom sebagai...",
+            "opts": [
+                  "A. Expectancy",
+                  "B. Instrumentality",
+                  "C. Valence (Valensi)",
+                  "D. Hygiene"
+            ],
+            "ans": 2,
+            "exp": "Valence mengukur seberapa berharga suatu ganjaran di mata individu tersebut."
+      },
+      {
+            "q": "15. Teori Keadilan (Equity Theory) dari J. Stacy Adams menyatakan bahwa pegawai akan termotivasi jika ia merasa...",
+            "opts": [
+                  "A. Mendapat gaji sama rata tanpa melihat kinerja",
+                  "B. Rasio antara kontribusi (input) dan imbalan (outcome) dirinya seimbang dibanding rekan pembanding",
+                  "C. Atasannya tidak pernah menegur",
+                  "D. Bekerja lebih sedikit dari orang lain"
+            ],
+            "ans": 1,
+            "exp": "Pegawai membandingkan rasio Outcome/Input miliknya dengan referent person; ketidakseimbangan memicu demotivasi."
+      },
+      {
+            "q": "16. Dalam teori penetapan tujuan (Goal-Setting Theory) Edwin Locke, tujuan kerja yang mampu memicu kinerja tertinggi adalah tujuan yang...",
+            "opts": [
+                  "A. Samar-samar ('lakukan sebaik mungkin')",
+                  "B. Spesifik, menantang namun realistis, dan disertai umpan balik",
+                  "C. Sangat mudah dicapai tanpa usaha",
+                  "D. Tidak memiliki tenggat waktu"
+            ],
+            "ans": 1,
+            "exp": "Tujuan yang spesifik dan sulit (tetapi tercapai) menghasilkan output jauh lebih tinggi daripada instruksi umum."
+      },
+      {
+            "q": "17. Abraham Zaleznik (dalam Robbins) membedakan secara tajam antara Manajer dan Pemimpin dalam organisasi, di mana Manajer cenderung...",
+            "opts": [
+                  "A. Menciptakan visi radikal yang mengguncang sistem",
+                  "B. Bersikap impersonal/pasif terhadap tujuan, berfokus menjaga keteraturan dan proses penyelesaian kompromi",
+                  "C. Menolak prosedur organisasi",
+                  "D. Hanya bekerja lewat karisma pribadi"
+            ],
+            "ans": 1,
+            "exp": "Zaleznik: Manajer menjaga stabilitas & proses administratif; Pemimpin aktif membentuk gagasan baru dan memicu emosi/perubahan."
+      },
+      {
+            "q": "18. Menurut Robert Katz, keterampilan yang wajib dimiliki paling kuat oleh manajer lini bawah/supervisor yang langsung membimbing operator teknis adalah...",
+            "opts": [
+                  "A. Conceptual Skill",
+                  "B. Technical Skill",
+                  "C. Political Skill",
+                  "D. Diplomatic Skill"
+            ],
+            "ans": 1,
+            "exp": "Manajer tingkat bawah (lower management) paling banyak memakai Technical Skill untuk supervisi pekerjaan teknis."
+      },
+      {
+            "q": "19. Sebaliknya, keterampilan Robert Katz yang mutlak diperlukan secara merata di SEMUA tingkatan manajemen (bawah, menengah, dan puncak) karena selalu berinteraksi dengan orang adalah...",
+            "opts": [
+                  "A. Technical Skill",
+                  "B. Human Skill (Keterampilan Manusiawi)",
+                  "C. Accounting Skill",
+                  "D. IT Coding"
+            ],
+            "ans": 1,
+            "exp": "Human Skill (kemampuan bekerja sama, empati, dan memotivasi orang) vital di setiap level manajemen."
+      },
+      {
+            "q": "20. Dalam kontinum kepemimpinan Tannenbaum & Schmidt, keputusan di mana pimpinan mempresentasikan masalah, meminta saran tim, baru kemudian mengambil keputusan mencerminkan gaya...",
+            "opts": [
+                  "A. Otokratis murni",
+                  "B. Konsultatif / Partisipatif",
+                  "C. Laissez-faire absolut",
+                  "D. Anarkis"
+            ],
+            "ans": 1,
+            "exp": "Kontinum bergerak dari otoriter di ujung kiri hingga partisipatif dan delegatif penuh di ujung kanan."
+      },
+      {
+            "q": "21. Perbedaan konseptual paling mendasar antara 'Kekuasaan' (Power) dan 'Wewenang' (Authority) dalam perilaku organisasi adalah...",
+            "opts": [
+                  "A. Kekuasaan selalu tertulis di SK, wewenang tidak",
+                  "B. Wewenang melekat sah pada posisi jabatan formal, sedangkan kekuasaan dapat dimiliki tanpa jabatan formal (misal lewat keahlian/karisma)",
+                  "C. Wewenang lebih luas dari kekuasaan",
+                  "D. Keduanya memiliki arti yang persis sama"
+            ],
+            "ans": 1,
+            "exp": "Authority adalah bagian dari power yang terlegitimasi secara formal oleh struktur jabatan."
+      },
+      {
+            "q": "22. Perilaku berpolitik dalam organisasi (Organizational Politics) paling sering muncul apabila...",
+            "opts": [
+                  "A. Sumber daya melimpah dan aturan sangat jelas",
+                  "B. Terjadi kelangkaan sumber daya (anggaran/jabatan) dan kriteria penilaian kinerja bersifat ambigu",
+                  "C. Organisasi tidak memiliki pegawai",
+                  "D. Semua keputusan diambil secara otomatis oleh sistem"
+            ],
+            "ans": 1,
+            "exp": "Ambiguitas kriteria, kelangkaan sumber daya, dan perubahan organisasi memicu manuver politik internal."
+      },
+      {
+            "q": "23. Ketergantungan (dependency) menjadi kunci sumber kekuasaan. Seseorang akan memiliki kekuasaan besar di organisasi apabila sumber daya yang dikuasainya bersifat...",
+            "opts": [
+                  "A. Mudah diganti dan melimpah",
+                  "B. Penting, langka (scarcity), dan tidak tergantikan (nonsubstitutability)",
+                  "C. Tidak dibutuhkan unit lain",
+                  "D. Bersifat rahasia tetapi tidak berguna"
+            ],
+            "ans": 1,
+            "exp": "Hukum ketergantungan Robbins: kekuasaan naik jika sesuatu itu penting, langka, dan tak tergantikan."
+      },
+      {
+            "q": "24. Studi Hawthorne yang dipimpin Elton Mayo memberikan penemuan revolusioner bagi ilmu perilaku organisasi karena membuktikan bahwa...",
+            "opts": [
+                  "A. Lampu yang redup pasti menurunkan produksi",
+                  "B. Perhatian sosial pemimpin, semangat kelompok, dan norma informal pekerja jauh lebih berpengaruh pada produktivitas daripada kondisi fisik semata",
+                  "C. Pekerja hanya termotivasi oleh ancaman pecat",
+                  "D. Istirahat kerja merugikan perusahaan"
+            ],
+            "ans": 1,
+            "exp": "Hawthorne Effect melahirkan gerakan Human Relations yang menempatkan manusia sebagai makhluk sosial."
+      },
+      {
+            "q": "25. Pendekatan Hubungan Antarmanusia (Human Relations) memandang konflik dan alienasi pekerja di era industri dapat diatasi melalui...",
+            "opts": [
+                  "A. Pengawasan CCTV yang ketat",
+                  "B. Komunikasi terbuka, penghargaan atas martabat manusia, dan pemenuhan kebutuhan sosial-psikologis",
+                  "C. Pemotongan jam istirahat",
+                  "D. Peningkatan beban target sepihak"
+            ],
+            "ans": 1,
+            "exp": "Human relations berfokus pada kepuasan psikologis dan iklim kerja harmonis."
+      },
+      {
+            "q": "26. Dalam proses komunikasi organisasi, tahap pengubahan gagasan/pikiran pengirim menjadi simbol-simbol bahasa, tulisan, atau isyarat yang dapat dipahami disebut...",
+            "opts": [
+                  "A. Decoding",
+                  "B. Encoding",
+                  "C. Noise",
+                  "D. Feedback"
+            ],
+            "ans": 1,
+            "exp": "Encoding = menyandikan pesan oleh pengirim; Decoding = menafsirkan pesan oleh penerima."
+      },
+      {
+            "q": "27. Komunikasi yang mengalir dari tingkat hierarki lebih rendah kepada pimpinan puncak (seperti laporan kendala lapangan atau kotak saran pegawai) disebut...",
+            "opts": [
+                  "A. Downward Communication",
+                  "B. Upward Communication",
+                  "C. Lateral Communication",
+                  "D. Grapevine"
+            ],
+            "ans": 1,
+            "exp": "Upward communication penting untuk memberi umpan balik kondisi riil lapangan kepada pimpinan."
+      },
+      {
+            "q": "28. Jaringan komunikasi informal di dalam organisasi yang sering berbentuk desas-desus atau kabar angin antarpegawai dikenal sebagai...",
+            "opts": [
+                  "A. Formal Channel",
+                  "B. Grapevine",
+                  "C. Memo Dinas",
+                  "D. Standing Order"
+            ],
+            "ans": 1,
+            "exp": "Grapevine menyebar sangat cepat secara informal dan sering muncul saat informasi resmi dari pimpinan tertutup."
+      },
+      {
+            "q": "29. Hambatan komunikasi di mana seorang kepala seksi sengaja menyaring atau memanipulasi laporan agar terlihat baik di mata kepala dinas disebut...",
+            "opts": [
+                  "A. Information Overload",
+                  "B. Filtering (Penyaringan)",
+                  "C. Language Barrier",
+                  "D. Silence"
+            ],
+            "ans": 1,
+            "exp": "Filtering terjadi akibat rasa takut atau keinginan menyenangkan atasan dalam organisasi hierarkis."
+      },
+      {
+            "q": "30. Bias psikologis dalam pengambilan keputusan ketika manajer tetap mempertahankan dan menambah anggaran proyek gagal hanya karena sudah telanjur menginvestasikan banyak dana di masa lalu disebut...",
+            "opts": [
+                  "A. Anchoring Bias",
+                  "B. Escalation of Commitment",
+                  "C. Availability Bias",
+                  "D. Hindsight Bias"
+            ],
+            "ans": 1,
+            "exp": "Escalation of Commitment mempertahankan keputusan buruk karena enggan mengakui kesalahan investasi awal (sunk cost)."
+      },
+      {
+            "q": "31. Kecenderungan pengambil keputusan untuk hanya mencari dan memercayai informasi yang mendukung keyakinannya semula sambil mengabaikan bukti tandingan disebut...",
+            "opts": [
+                  "A. Confirmation Bias",
+                  "B. Randomness Error",
+                  "C. Risk Aversion",
+                  "D. Rational Choice"
+            ],
+            "ans": 0,
+            "exp": "Confirmation Bias membuat pembuat keputusan selektif memvalidasi asumsi pribadinya."
+      },
+      {
+            "q": "32. Sejauh mana anggota kelompok saling tertarik satu sama lain dan termotivasi untuk tetap tinggal serta bersatu di dalam kelompok disebut...",
+            "opts": [
+                  "A. Status",
+                  "B. Kohesivitas (Cohesiveness)",
+                  "C. Role Conflict",
+                  "D. Social Loafing"
+            ],
+            "ans": 1,
+            "exp": "Kohesivitas tinggi disertai norma kinerja tinggi akan menghasilkan produktivitas kelompok paling optimal."
+      },
+      {
+            "q": "33. Gejala di mana individu mengeluarkan usaha yang lebih sedikit ketika bekerja dalam kelompok dibanding saat bekerja sendirian disebut...",
+            "opts": [
+                  "A. Synergy",
+                  "B. Social Loafing (Kemalasan Sosial)",
+                  "C. Groupthink",
+                  "D. Brainstorming"
+            ],
+            "ans": 1,
+            "exp": "Social Loafing muncul karena akuntabilitas individu terasa kabur dalam kelompok besar."
+      },
+      {
+            "q": "34. Cara mencegah terjadinya Social Loafing dalam tim proyek pemerintah antara lain dengan...",
+            "opts": [
+                  "A. Menambah jumlah anggota tim menjadi sangat besar",
+                  "B. Menetapkan kontribusi/tanggung jawab individu secara jelas dan mengukurnya secara transparan",
+                  "C. Menghapus penilaian kinerja",
+                  "D. Tidak membagi tugas secara spesifik"
+            ],
+            "ans": 1,
+            "exp": "Kejelasan kontribusi individu dan ukuran kinerja personal menekan kecenderungan menumpang gratis (free-riding)."
+      },
+      {
+            "q": "35. Dalam manajemen konflik Thomas-Kilmann, strategi penyelesaian konflik dengan tingkat ketegasan tinggi DAN kerja sama tinggi guna mencari solusi saling menguntungkan (Win-Win) adalah...",
+            "opts": [
+                  "A. Avoiding (Menghindar)",
+                  "B. Competing (Bersaing)",
+                  "C. Collaborating (Berkolaborasi)",
+                  "D. Accommodating (Mengalah)"
+            ],
+            "ans": 2,
+            "exp": "Collaborating memadukan assertiveness tinggi dan cooperativeness tinggi demi solusi integratif win-win."
+      },
+      {
+            "q": "36. Strategi penyelesaian konflik di mana masing-masing pihak bersedia mengorbankan sebagian tuntutannya agar tercapai jalan tengah sementara disebut...",
+            "opts": [
+                  "A. Collaborating",
+                  "B. Compromising (Kompromi)",
+                  "C. Competing",
+                  "D. Avoiding"
+            ],
+            "ans": 1,
+            "exp": "Compromising berada di titik tengah (masing-masing memberi dan menerima konsesi)."
+      },
+      {
+            "q": "37. Konflik yang terjadi ketika tuntutan peran sebagai kepala keluarga bertabrakan dengan tuntutan peran sebagai pejabat publik yang harus lembur disebut...",
+            "opts": [
+                  "A. Konflik Antarkelompok",
+                  "B. Konflik Peran (Role Conflict)",
+                  "C. Konflik Fungsional",
+                  "D. Konflik Struktural"
+            ],
+            "ans": 1,
+            "exp": "Role Conflict muncul ketika pemenuhan satu peran menyulitkan pemenuhan peran lainnya."
+      },
+      {
+            "q": "38. Sistem nilai, keyakinan, dan norma bersama yang dianut anggota organisasi serta membedakan satu organisasi dengan organisasi lainnya disebut...",
+            "opts": [
+                  "A. Struktur Gaji",
+                  "B. Budaya Organisasi (Organizational Culture)",
+                  "C. Rentang Kendali",
+                  "D. Deskripsi Jabatan"
+            ],
+            "ans": 1,
+            "exp": "Budaya organisasi berfungsi sebagai perekat sosial dan pedoman perilaku tak tertulis pegawai."
+      },
+      {
+            "q": "39. Menurut Edgar Schein, elemen budaya organisasi yang paling mudah diamati secara fisik seperti seragam, logo, tata ruang kantor, dan upacara apel pagi disebut...",
+            "opts": [
+                  "A. Basic Assumptions",
+                  "B. Espoused Values",
+                  "C. Artifacts (Artefak)",
+                  "D. Hidden Norms"
+            ],
+            "ans": 2,
+            "exp": "3 level Schein: Artifacts (terlihat), Espoused Values (nilai yang dianut), Basic Underlying Assumptions (keyakinan terdalam)."
+      },
+      {
+            "q": "40. Metode evaluasi kinerja yang melibatkan penilaian menyeluruh dari atasan, rekan kerja sejawat, bawahan langsung, dan penilaian diri sendiri (self-assessment) disebut...",
+            "opts": [
+                  "A. Ranking Sederhana",
+                  "B. Evaluasi 360 Derajat",
+                  "C. Paired Comparison",
+                  "D. Essay Method"
+            ],
+            "ans": 1,
+            "exp": "360-Degree Feedback meminimalkan bias subjektivitas atasan tunggal."
+      },
+      {
+            "q": "41. Metode evaluasi kinerja yang menilai pencapaian sasaran kerja spesifik yang telah disepakati bersama antara atasan dan pegawai di awal periode (mirip SKP ASN) disebut...",
+            "opts": [
+                  "A. MBO (Management by Objectives)",
+                  "B. Forced Distribution",
+                  "C. Critical Incident",
+                  "D. Trait Appraisal"
+            ],
+            "ans": 0,
+            "exp": "MBO fokus pada keterukuran hasil (output/outcome) berdasarkan kontrak target bersama."
+      },
+      {
+            "q": "42. Bias penilai dalam evaluasi kinerja di mana seorang atasan cenderung memberikan nilai baik atau rata-rata kepada SEMUA bawahannya karena takut menimbulkan konflik disebut...",
+            "opts": [
+                  "A. Severity Error",
+                  "B. Leniency / Central Tendency Bias",
+                  "C. Contrast Error",
+                  "D. Recency Effect"
+            ],
+            "ans": 1,
+            "exp": "Leniency (terlalu murah nilai) dan Central Tendency (memberi nilai tengah semua) merusak objektivitas evaluasi."
+      },
+      {
+            "q": "43. Bias evaluasi kinerja di mana penilai hanya mengingat peristiwa kinerja pegawai pada 1–2 minggu terakhir menjelang penilaian dan melupakan kinerja sepanjang tahun disebut...",
+            "opts": [
+                  "A. Recency Effect",
+                  "B. Halo Effect",
+                  "C. Stereotyping",
+                  "D. Primacy Effect"
+            ],
+            "ans": 0,
+            "exp": "Recency Effect membuat perilaku terbaru mendominasi ingatan penilai."
+      },
+      {
+            "q": "44. Salah satu cara mengatasi stres kerja (work stress) pada pegawai layanan publik garis depan menurut kajian perilaku organisasi adalah...",
+            "opts": [
+                  "A. Menambah beban administratif tanpa batas",
+                  "B. Redesign pekerjaan, kejelasan peran, dukungan sosial rekan kerja, dan program konseling",
+                  "C. Menghapus jam cuti",
+                  "D. Memutus komunikasi dengan atasan"
+            ],
+            "ans": 1,
+            "exp": "Job redesign dan social support terbukti menurunkan burnout dan role ambiguity pegawai."
+      },
+      {
+            "q": "45. Struktur organisasi dengan pembagian wewenang yang sangat tersentralisasi, formalisasi aturan tinggi, dan rantai komando kaku disebut struktur...",
+            "opts": [
+                  "A. Organik",
+                  "B. Mekanistik (Birokrasi Klasik)",
+                  "C. Matriks Fleksibel",
+                  "D. Jaringan Virtual"
+            ],
+            "ans": 1,
+            "exp": "Struktur Mekanistik cocok untuk lingkungan stabil dan tugas rutin, sedangkan Organik cocok untuk lingkungan dinamis/inovatif."
+      },
+      {
+            "q": "46. Struktur organisasi yang menggabungkan departementalisasi fungsional dan proyek sekaligus sehingga pegawai memiliki dua garis pelaporan disebut struktur...",
+            "opts": [
+                  "A. Struktur Sederhana",
+                  "B. Struktur Matriks (Matrix Structure)",
+                  "C. Struktur Lini Tunggal",
+                  "D. Struktur Birokrasi Murni"
+            ],
+            "ans": 1,
+            "exp": "Struktur Matriks memadukan spesialisasi fungsional dan koordinasi proyek lintas unit (mengorbankan kesatuan komando)."
+      },
+      {
+            "q": "47. Dalam proses sosialisasi pegawai baru ke dalam budaya organisasi, tahap saat pegawai baru mulai menyesuaikan diri dengan realitas organisasi dan mempelajari norma sejatinya disebut...",
+            "opts": [
+                  "A. Prearrival",
+                  "B. Encounter (Pertemuan)",
+                  "C. Metamorphosis",
+                  "D. Retirement"
+            ],
+            "ans": 1,
+            "exp": "3 tahap sosialisasi: Prearrival (sebelum masuk) → Encounter (berhadapan realitas) → Metamorphosis (beradaptasi penuh)."
+      },
+      {
+            "q": "48. Menurut konsep Organizational Citizenship Behavior (OCB), perilaku pegawai yang secara sukarela membantu rekan kerja atau menjaga citra instansi meski tidak tercantum dalam uraian tugas formal disebut...",
+            "opts": [
+                  "A. Perilaku Extra-Role",
+                  "B. Counterproductive Work Behavior",
+                  "C. Absenteeism",
+                  "D. Turnover"
+            ],
+            "ans": 0,
+            "exp": "OCB adalah perilaku sukarela (extra-role) di luar deskripsi kerja yang meningkatkan efektivitas organisasi."
+      },
+      {
+            "q": "49. Perubahan organisasi yang terjadi akibat penyesuaian terhadap regulasi baru pemerintah atau transformasi teknologi digital termasuk ke dalam kekuatan pendorong perubahan dari...",
+            "opts": [
+                  "A. Faktor Internal Individu",
+                  "B. Faktor Eksternal Lingkungan Organisasi",
+                  "C. Konflik Interpersonal Pribadi",
+                  "D. Kebosanan Pimpinan"
+            ],
+            "ans": 1,
+            "exp": "Regulasi negara, teknologi, dan tuntutan publik adalah pendorong eksternal perubahan organisasi."
+      },
+      {
+            "q": "50. Dalam perspektif Perilaku Organisasi Sektor Publik, kunci utama mengubah budaya birokrasi yang lamban menjadi birokrasi berkinerja tinggi (agile) adalah...",
+            "opts": [
+                  "A. Menambah jumlah stempel dan tanda tangan fisik",
+                  "B. Perubahan pola pikir aparatur, sistem penghargaan berbasis kinerja (merit), kepemimpinan transformasional, dan keterbukaan inovasi",
+                  "C. Mengurangi jam layanan warga",
+                  "D. Mempertahankan budaya senioritas mutlak"
+            ],
+            "ans": 1,
+            "exp": "Reformasi budaya birokrasi menuntut sinergi sistem merit, kepemimpinan teladan, dan orientasi pelayanan warga."
+      }
+];
+
+
+    let userAnswers = {};
+    let quizFilter = 'all';
+
+    function renderQuizHTML() {
+      const answeredCount = Object.keys(userAnswers).length;
+      const correctCount = Object.entries(userAnswers).filter(([qi, oi]) => quizData[qi].ans === oi).length;
+      const pct = answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0;
+
+      const filtered = quizData.map((item, qi) => ({ item, qi })).filter(({ item, qi }) => {
+        if (quizFilter === 'unanswered') return userAnswers[qi] === undefined;
+        if (quizFilter === 'wrong') return userAnswers[qi] !== undefined && userAnswers[qi] !== item.ans;
+        return true;
+      });
+
+      return `
+        <div class="space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border,#cbd5e1)] pb-3">
+            <div>
+              <h2 class="text-xl font-bold">Simulasi Kuis UAS (${quizData.length} Soal)</h2>
+              <p class="text-xs text-[var(--muted-foreground,#475569)]">Dijawab: <strong>${answeredCount}/${quizData.length}</strong> • Benar: <strong class="text-emerald-600">${correctCount}</strong> • Akurasi: <strong>${pct}%</strong></p>
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5 text-xs">
+              <button onclick="setFilter('all')" class="px-2.5 py-1 rounded-lg border ${quizFilter==='all'?'bg-[var(--primary,#1d4ed8)] text-white border-transparent font-bold':'border-[var(--border,#cbd5e1)]'}">Semua (${quizData.length})</button>
+              <button onclick="setFilter('unanswered')" class="px-2.5 py-1 rounded-lg border ${quizFilter==='unanswered'?'bg-[var(--primary,#1d4ed8)] text-white border-transparent font-bold':'border-[var(--border,#cbd5e1)]'}">Belum (${quizData.length - answeredCount})</button>
+              <button onclick="setFilter('wrong')" class="px-2.5 py-1 rounded-lg border ${quizFilter==='wrong'?'bg-[var(--primary,#1d4ed8)] text-white border-transparent font-bold':'border-[var(--border,#cbd5e1)]'}">Salah</button>
+              <button onclick="resetQuiz()" class="px-2.5 py-1 rounded-lg border border-rose-400 text-rose-600 hover:bg-rose-50 font-semibold">Reset</button>
+            </div>
+          </div>
+          <div class="space-y-3 max-h-[440px] overflow-y-auto pr-1">
+            ${filtered.length === 0 ? '<p class="text-xs text-center py-8 text-[var(--muted-foreground,#475569)]">Tidak ada soal pada filter ini.</p>' : filtered.map(({ item, qi }) => {
+              const ua = userAnswers[qi];
+              const isDone = ua !== undefined;
+              return `
+              <div class="p-3.5 rounded-xl border border-[var(--border,#cbd5e1)] bg-[var(--background,#f8fafc)] space-y-2 text-xs">
+                <p class="font-semibold leading-relaxed">${item.q}</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                  ${item.opts.map((opt, oi) => {
+                    let cls = "border-[var(--border,#cbd5e1)] hover:bg-[var(--secondary,#e2e8f0)]";
+                    if (isDone) {
+                      if (oi === item.ans) cls = "border-emerald-600 bg-emerald-600 text-white font-bold";
+                      else if (oi === ua && ua !== item.ans) cls = "border-rose-600 bg-rose-600 text-white";
+                      else cls = "border-[var(--border,#cbd5e1)] opacity-60";
+                    }
+                    return `<button ${isDone?'disabled':''} onclick="checkAns(${qi}, ${oi})" class="text-left px-3 py-1.5 rounded-lg border transition ${cls}">${opt}</button>`;
+                  }).join('')}
+                </div>
+                ${isDone ? `<p class="text-[11px] p-2 rounded bg-[var(--secondary,#e2e8f0)]">${ua === item.ans ? '✓ Benar! ' : '✗ Kurang tepat. '}${item.exp}</p>` : ''}
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`;
+    }
+
+    function setFilter(f) { quizFilter = f; renderPage(); }
+    function resetQuiz() { userAnswers = {}; quizFilter = 'all'; renderPage(); }
+    function checkAns(qi, oi) { userAnswers[qi] = oi; renderPage(); }
+
+    let current = 0;
+    function renderPage() {
+      const container = document.getElementById('pageContent');
+      container.classList.remove('flip-enter');
+      void container.offsetWidth;
+      container.classList.add('flip-enter');
+      container.innerHTML = pages[current].render();
+      document.getElementById('pageBadge').textContent = `${current + 1} / ${pages.length}`;
+      document.getElementById('progressBar').style.width = `${((current + 1) / pages.length) * 100}%`;
+      document.getElementById('prevBtn').disabled = current === 0;
+      document.getElementById('nextBtn').disabled = current === pages.length - 1;
+      renderToc();
+    }
+
+    function renderToc() {
+      const toc = document.getElementById('tocDrawer');
+      toc.innerHTML = pages.map((p, idx) => `
+        <button onclick="goTo(${idx})" class="text-left p-2 rounded-lg border text-xs transition ${idx === current ? 'border-[var(--primary)] bg-[var(--secondary)] font-bold' : 'border-[var(--border)] hover:bg-[var(--secondary)]'}">
+          <div class="text-[10px] text-[var(--muted-foreground)]">${p.tag}</div>
+          <div class="truncate">${p.title}</div>
+        </button>
+      `).join('');
+    }
+
+    function toggleToc() { document.getElementById('tocDrawer').classList.toggle('hidden'); }
+    function goTo(idx) { current = idx; renderPage(); document.getElementById('tocDrawer').classList.add('hidden'); }
+    function nextPage() { if (current < pages.length - 1) { current++; renderPage(); } }
+    function prevPage() { if (current > 0) { current--; renderPage(); } }
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') nextPage();
+      if (e.key === 'ArrowLeft') prevPage();
+    });
+
+    renderPage();
+  </script>
+</body>
+</html>

@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flipbook UAS — FSAP4204 Administrasi Pemerintahan Daerah</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    /* Multi-device fallback vars without overriding :root in Antigravity */
+    body {
+      background-color: var(--background, #f8fafc);
+      color: var(--foreground, #0f172a);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .fb-card { background-color: var(--card, #ffffff); border-color: var(--border, #cbd5e1); }
+    .fb-muted { color: var(--muted-foreground, #475569); }
+    .fb-sec { background-color: var(--secondary, #e2e8f0); color: var(--secondary-foreground, #0f172a); }
+    .fb-pri { background-color: var(--primary, #1d4ed8); color: var(--primary-foreground, #ffffff); }
+    @keyframes pageFlip {
+      0% { opacity: 0; transform: perspective(1200px) rotateY(-8deg) scale(0.98); }
+      100% { opacity: 1; transform: perspective(1200px) rotateY(0deg) scale(1); }
+    }
+    .flip-enter { animation: pageFlip 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+  </style>
+</head>
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased min-h-screen p-4 md:p-6">
+  <div class="max-w-5xl mx-auto space-y-4">
+    <header class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 flex flex-wrap items-center justify-between gap-3 shadow-sm">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-[var(--primary)] text-[var(--primary-foreground)]">FSAP4204 / ADPU4440</span>
+          <span class="text-xs font-medium text-[var(--muted-foreground)]">Minggu, 29 Nov 2026 • 08:00–09:30 WIB • UOLP UT</span>
+        </div>
+        <h1 class="text-lg font-bold mt-1">Flipbook Rangkuman UAS: Administrasi Pemerintahan Daerah</h1>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="toggleToc()" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[var(--border)] hover:bg-[var(--secondary)] transition">Daftar Halaman</button>
+        <span id="pageBadge" class="px-3 py-1.5 text-xs font-mono font-bold rounded-lg bg-[var(--secondary)] text-[var(--secondary-foreground)]">1 / 10</span>
+      </div>
+    </header>
+
+    <div class="w-full h-1.5 bg-[var(--secondary)] rounded-full overflow-hidden">
+      <div id="progressBar" class="h-full bg-[var(--primary)] transition-all duration-300" style="width: 10%"></div>
+    </div>
+
+    <nav id="tocDrawer" class="hidden bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2"></nav>
+
+    <main class="relative bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-md overflow-hidden">
+      <div class="h-1.5 w-full bg-gradient-to-r from-[var(--chart-2)] via-[var(--primary)] to-[var(--chart-4)]"></div>
+      <div id="pageContent" class="p-6 md:p-8 min-h-[520px] flip-enter"></div>
+      <footer class="border-t border-[var(--border)] px-6 py-3.5 flex items-center justify-between bg-[var(--sidebar)]">
+        <button id="prevBtn" onclick="prevPage()" class="px-4 py-2 text-xs font-semibold rounded-lg border border-[var(--border)] bg-[var(--card)] hover:bg-[var(--secondary)] disabled:opacity-40 transition">← Sebelumnya</button>
+        <div class="text-xs text-[var(--muted-foreground)] hidden sm:block">Gunakan panah <kbd class="px-1.5 py-0.5 border border-[var(--border)] rounded">←</kbd> <kbd class="px-1.5 py-0.5 border border-[var(--border)] rounded">→</kbd></div>
+        <button id="nextBtn" onclick="nextPage()" class="px-4 py-2 text-xs font-semibold rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 disabled:opacity-40 transition">Berikutnya →</button>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    const pages = [
+      {
+        title: "Sampul & Info Ujian",
+        tag: "SAMPUL",
+        render: () => `
+          <div class="flex flex-col justify-between h-full space-y-6 py-4">
+            <div class="space-y-3">
+              <span class="inline-block px-3 py-1 text-xs font-bold rounded-full bg-[var(--secondary)] text-[var(--primary)]">PERSIAPAN UAS UOLP • HARI KE-2</span>
+              <h2 class="text-3xl font-extrabold tracking-tight">Administrasi Pemerintahan Daerah</h2>
+              <p class="text-sm text-[var(--muted-foreground)]">Kode: <strong>FSAP4204</strong> | BMP: <strong>ADPU4440 Edisi 4 (Hanif Nurcholis & Enceng, 2025)</strong> | 9 Modul</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-2">
+                <h3 class="text-sm font-bold text-[var(--primary)]">Detail Pelaksanaan Ujian</h3>
+                <ul class="text-xs space-y-1.5 text-[var(--muted-foreground)]">
+                  <li>• <strong>Hari/Tanggal:</strong> Minggu, 29 November 2026</li>
+                  <li>• <strong>Waktu:</strong> Sesi 1 (08:00 – 09:30 WIB)</li>
+                  <li>• <strong>Lokasi:</strong> UPJ Bintaro, Gedung B Lt. 8 (Ruang 5 / Kursi 20)</li>
+                  
+                </ul>
+              </div>
+              <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-2">
+                <h3 class="text-sm font-bold text-[var(--success)]">Fokus Kunci Soal Pemda</h3>
+                <ul class="text-xs space-y-1.5 text-[var(--muted-foreground)]">
+                  <li>• Perbedaan <strong>Desentralisasi, Dekonsentrasi, Tugas Pembantuan</strong></li>
+                  <li>• <strong>UU No. 23/2014:</strong> Urusan Absolut vs Konkuren (Wajib & Pilihan)</li>
+                  <li>• Siklus Penyusunan & Dokumen <strong>APBD</strong> (KUA-PPAS, DPA, SP2D)</li>
+                  <li>• Jenis Pengawasan (Inspektorat, BPK, DPRD, PTUN)</li>
+                </ul>
+              </div>
+            </div>
+          </div>`
+      },
+      {
+        title: "Modul 1: Konsep Dasar Pemda",
+        tag: "MODUL 1",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Modul 1: Konsep Dasar Local Government</h2>
+              <span class="text-xs font-mono text-[var(--muted-foreground)]">CPU-MK 1</span>
+            </div>
+            <table class="w-full text-xs border border-[var(--border)] rounded-lg overflow-hidden">
+              <thead class="bg-[var(--secondary)]">
+                <tr><th class="p-2.5 text-left">Asas Pemerintahan</th><th class="p-2.5 text-left">Definisi & Inti Pembeda</th></tr>
+              </thead>
+              <tbody class="divide-y divide-[var(--border)]">
+                <tr><td class="p-2.5 font-semibold">Sentralisasi</td><td class="p-2.5">Seluruh kewenangan terpusat pada pemerintah pusat.</td></tr>
+                <tr><td class="p-2.5 font-semibold">Desentralisasi</td><td class="p-2.5"><strong>Penyerahan</strong> wewenang dari pusat kepada <strong>daerah otonom</strong>.</td></tr>
+                <tr><td class="p-2.5 font-semibold">Dekonsentrasi</td><td class="p-2.5"><strong>Pelimpahan</strong> wewenang kepada pejabat/instansi vertikal di daerah (Gubernur sebagai GWPP).</td></tr>
+                <tr><td class="p-2.5 font-semibold">Tugas Pembantuan</td><td class="p-2.5"><strong>Penugasan</strong> dari pusat ke daerah/desa untuk urusan tertentu dengan kewajiban melapor.</td></tr>
+              </tbody>
+            </table>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)]">
+                <strong>Daerah Otonom:</strong> Memiliki hak, wewenang, dan kewajiban mengatur/mengurus sendiri (berdasar desentralisasi).
+              </div>
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)]">
+                <strong>Wilayah Administratif:</strong> Wilayah kerja pejabat perangkat pemerintah pusat di daerah (berdasar dekonsentrasi).
+              </div>
+            </div>
+          </div>`
+      },
+      {
+        title: "Modul 2: Pemda dalam NKRI",
+        tag: "MODUL 2",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Modul 2: Pemerintahan Daerah dalam NKRI</h2>
+              <span class="text-xs font-mono text-[var(--muted-foreground)]">CPU-MK 2</span>
+            </div>
+            <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs space-y-2">
+              <h3 class="font-bold text-sm text-[var(--primary)]">Landasan Konstitusional & Relasi Pusat-Daerah</h3>
+              <p>• <strong>UUD 1945 Pasal 18, 18A, dan 18B:</strong> Mengatur pembagian wilayah NKRI atas provinsi dan kab/kota, otonomi seluas-luasnya, serta pengakuan daerah istimewa/khusus.</p>
+              <p>• <strong>Gubernur sebagai Wakil Pemerintah Pusat (GWPP — PP No. 33/2018):</strong> Melakukan pembinaan dan pengawasan penyelenggaraan pemerintahan kab/kota.</p>
+            </div>
+            <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--secondary)] text-xs space-y-2">
+              <h3 class="font-bold text-sm">4 Komponen Sistem Administrasi Pemerintahan Daerah:</h3>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div class="p-2.5 rounded bg-[var(--card)] border border-[var(--border)]"><strong>1. Organisasi</strong><br/>Struktur Perangkat Daerah</div>
+                <div class="p-2.5 rounded bg-[var(--card)] border border-[var(--border)]"><strong>2. Kepegawaian</strong><br/>ASN & birokrasi lokal</div>
+                <div class="p-2.5 rounded bg-[var(--card)] border border-[var(--border)]"><strong>3. Kewenangan</strong><br/>Pembagian urusan pusat-daerah</div>
+                <div class="p-2.5 rounded bg-[var(--card)] border border-[var(--border)]"><strong>4. Keuangan</strong><br/>APBD & dana perimbangan</div>
+              </div>
+            </div>
+          </div>`
+      },
+      {
+        title: "Modul 3: Urusan & Koordinasi",
+        tag: "MODUL 3 (WAJIB!)",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Modul 3: Kewenangan & Urusan Pemda (UU 23/2014)</h2>
+              <span class="text-xs font-mono text-[var(--primary)]">Sering Keluar!</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-1.5">
+                <strong class="text-[var(--primary)]">Doktrin Penyerahan Urusan:</strong><br/>
+                • <strong>Ultra Vires Doctrine:</strong> Daerah hanya boleh mengurus apa yang <em>secara eksplisit dirinci</em> oleh UU pusat.<br/>
+                • <strong>Open Arrangement / General Competence:</strong> Daerah boleh mengurus apa saja kecuali yang dilarang/jadi urusan absolut pusat.
+              </div>
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-1.5">
+                <strong class="text-[var(--primary)]">Evolusi UU Pemda di Indonesia:</strong><br/>
+                • <strong>UU 22/1999:</strong> Era otonomi luas pasca-reformasi.<br/>
+                • <strong>UU 32/2004:</strong> Penguatan peran gubernur & pilkada langsung.<br/>
+                • <strong>UU 23/2014:</strong> Berlaku saat ini — klasifikasi rinci urusan absolut, konkuren, umum.
+              </div>
+            </div>
+            <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--secondary)] text-xs space-y-2">
+              <h3 class="font-bold text-sm">Klasifikasi Urusan Pemerintahan (UU No. 23/2014):</h3>
+              <ul class="space-y-1">
+                <li>• <strong>6 Urusan Absolut Pusat:</strong> Politik Luar Negeri, Pertahanan, Keamanan, Yustisi, Moneter & Fiskal Nasional, Agama.</li>
+                <li>• <strong>Urusan Konkuren Wajib Pelayanan Dasar (SPM):</strong> Pendidikan, Kesehatan, PUPR, Perumahan Rakyat, Trantibumlinmas, Sosial.</li>
+                <li>• <strong>Urusan Konkuren Pilihan:</strong> Kelautan & perikanan, pariwisata, pertanian, kehutanan, energi/SDM, perdagangan, perindustrian, transmigrasi.</li>
+              </ul>
+            </div>
+          </div>`
+      },
+      {
+        title: "Modul 4: Keuangan Daerah (APBD)",
+        tag: "MODUL 4",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Modul 4: Pengelolaan Keuangan Daerah</h2>
+              <span class="text-xs font-mono text-[var(--muted-foreground)]">CPU-MK 4</span>
+            </div>
+            <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs space-y-2">
+              <h3 class="font-bold text-sm text-[var(--primary)]">Tahapan Penyusunan & Pelaksanaan APBD</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                <div class="p-2.5 rounded bg-[var(--secondary)]"><strong>1. Persiapan</strong><br/>Penyusunan KUA & PPAS antara Pemda & DPRD</div>
+                <div class="p-2.5 rounded bg-[var(--secondary)]"><strong>2. Penyusunan</strong><br/>RKA-SKPD dirangkai menjadi Rancangan APBD</div>
+                <div class="p-2.5 rounded bg-[var(--secondary)]"><strong>3. Ratifikasi</strong><br/>Pembahasan & persetujuan bersama DPRD → Perda APBD</div>
+                <div class="p-2.5 rounded bg-[var(--secondary)]"><strong>4. Pelaksanaan</strong><br/>Terbit DPA-SKPD → pencairan via SPP, SPM, SP2D</div>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)]">
+                <strong class="text-[var(--primary)]">6 Fungsi Anggaran Daerah:</strong><br/>
+                Otorisasi, Perencanaan, Pengawasan, Alokasi, Distribusi, Stabilisasi.
+              </div>
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)]">
+                <strong class="text-[var(--primary)]">Sumber Pendapatan Daerah:</strong><br/>
+                1. <strong>PAD</strong> (Pajak Daerah, Retribusi, Hasil BUMD).<br/>
+                2. <strong>Dana Transfer</strong> (DBH, DAU, DAK).<br/>
+                3. Lain-lain pendapatan daerah yang sah.
+              </div>
+            </div>
+          </div>`
+      },
+      {
+        title: "Modul 5: Kelembagaan Pemda",
+        tag: "MODUL 5",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Modul 5: Kelembagaan Pemerintahan Daerah</h2>
+              <span class="text-xs font-mono text-[var(--muted-foreground)]">CPU-MK 5</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-2">
+                <h3 class="font-bold text-sm text-[var(--primary)]">Unsur Penyelenggara Pemda</h3>
+                <p><strong>Kepala Daerah (Eksekutif) + DPRD (Legislatif Lokal)</strong> dalam model hubungan <em>Mayor and Council</em>.</p>
+                <p><strong>3 Fungsi Utama DPRD:</strong> (1) Pembentukan Perda (Legislasi), (2) Anggaran (Budgeting), (3) Pengawasan (Controlling).</p>
+              </div>
+              <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-2">
+                <h3 class="font-bold text-sm text-[var(--primary)]">Perangkat Daerah (PP 18/2016)</h3>
+                <ul class="space-y-1">
+                  <li>• <strong>Sekretariat Daerah (Setda) & Sekretariat DPRD</strong></li>
+                  <li>• <strong>Inspektorat Daerah</strong> (pengawas internal)</li>
+                  <li>• <strong>Dinas Daerah</strong> (pelaksana urusan pemerintahan)</li>
+                  <li>• <strong>Badan Daerah</strong> (fungsi penunjang: Bappeda, BKD, BPKAD)</li>
+                  <li>• <strong>Kecamatan</strong> (kewilayahan kab/kota)</li>
+                </ul>
+              </div>
+            </div>
+            <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--secondary)] text-xs">
+              <strong>Instansi Vertikal:</strong> Perangkat kementerian/lembaga pusat yang berkedudukan di daerah (seperti Polres, KPP Pajak, Kanwil Kemenag, BPN) — mengurus urusan absolut pusat, <em>bukan</em> perangkat daerah otonom.
+            </div>
+          </div>`
+      },
+      {
+        title: "Modul 6 & 7: ASN & Kebijakan Daerah",
+        tag: "MODUL 6 & 7",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Modul 6 & 7: ASN Daerah & Kebijakan Daerah</h2>
+              <span class="text-xs font-mono text-[var(--muted-foreground)]">CPU-MK 6 & 7</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-2">
+                <h3 class="font-bold text-sm text-[var(--primary)]">Modul 6: ASN Daerah</h3>
+                <ul class="space-y-1.5">
+                  <li>• <strong>Pegawai Daerah:</strong> ASN (PNS & PPPK) yang gajinya dibebankan pada APBD.</li>
+                  <li>• <strong>Sistem Merit:</strong> Manajemen ASN berdasarkan kualifikasi, kompetensi, dan kinerja secara adil tanpa diskriminasi politik/SARA.</li>
+                  <li>• Siklus: Pengadaan formasi → Pengembangan kompetensi/diklat → Penilaian kinerja → Pemberhentian.</li>
+                </ul>
+              </div>
+              <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-2">
+                <h3 class="font-bold text-sm text-[var(--primary)]">Modul 7: Kebijakan & Evaluasi Daerah</h3>
+                <p><strong>Hierarki Perencanaan Daerah:</strong> RPJPD (20 thn) → RPJMD (5 thn) → Renstra SKPD → RKPD (1 thn) → Perda.</p>
+                <p><strong>4 Evaluasi Kebijakan (Finance, 1994):</strong></p>
+                <ul class="space-y-1">
+                  <li>1. <em>Appropriateness</em> (Kecocokan tujuan)</li>
+                  <li>2. <em>Effectiveness</em> (Pencapaian target)</li>
+                  <li>3. <em>Efficiency</em> (Penggunaan sumber daya)</li>
+                  <li>4. <em>Meta-Evaluation</em> (Evaluasi atas sistem evaluasi)</li>
+                </ul>
+              </div>
+            </div>
+          </div>`
+      },
+      {
+        title: "Modul 8 & 9: Pelayanan & Pengawasan",
+        tag: "MODUL 8 & 9",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Modul 8 & 9: Pelayanan & Pengawasan Pemda</h2>
+              <span class="text-xs font-mono text-[var(--muted-foreground)]">CPU-MK 8 & 9</span>
+            </div>
+            <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs">
+              <strong class="text-sm text-[var(--primary)]">Modul 8: Pelayanan Publik & Kesejahteraan</strong>
+              <p class="mt-1">Hakikat akhir penyelenggaraan pemerintahan daerah adalah mewujudkan <strong>masyarakat daerah yang sejahtera</strong> melalui pelayanan perorangan, penyediaan infrastruktur ekonomi, dan perlindungan masyarakat sesuai Standar Pelayanan Minimal (SPM).</p>
+            </div>
+            <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--secondary)] text-xs space-y-2">
+              <h3 class="font-bold text-sm">Modul 9: 4 Pilar Pengawasan Pemerintahan Daerah</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                <div class="p-2.5 rounded bg-[var(--card)] border border-[var(--border)]"><strong>1. Pengawasan Intern</strong><br/>Inspektorat Daerah & BPKP</div>
+                <div class="p-2.5 rounded bg-[var(--card)] border border-[var(--border)]"><strong>2. Pengawasan Ekstern</strong><br/>BPK (Badan Pemeriksa Keuangan)</div>
+                <div class="p-2.5 rounded bg-[var(--card)] border border-[var(--border)]"><strong>3. Pengawasan Politik</strong><br/>DPRD melalui hak angket/interpelasi</div>
+                <div class="p-2.5 rounded bg-[var(--card)] border border-[var(--border)]"><strong>4. Peradilan & Publik</strong><br/>Judicial Review MA, PTUN, Ombudsman & Warga</div>
+              </div>
+            </div>
+          </div>`
+      },
+      {
+        title: "Cheat-Sheet & Jebakan Soal",
+        tag: "CHEAT-SHEET",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Cheat-Sheet Cepat FSAP4204</h2>
+              <span class="text-xs font-mono text-[var(--primary)]">Hafalan Kilat</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-1.5">
+                <strong class="text-[var(--primary)]">Pembeda Istilah Penting:</strong>
+                <ul class="space-y-1">
+                  <li>• <strong>Penyerahan</strong> wewenang = <em>Desentralisasi</em> (Otonom).</li>
+                  <li>• <strong>Pelimpahan</strong> wewenang = <em>Dekonsentrasi</em> (GWPP/Vertikal).</li>
+                  <li>• <strong>Penugasan</strong> = <em>Tugas Pembantuan (Medebewind)</em>.</li>
+                  <li>• <strong>Judicial Review Perda</strong> = Diuji di <strong>Mahkamah Agung (MA)</strong>, bukan MK! (MK hanya menguji UU terhadap UUD).</li>
+                </ul>
+              </div>
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-1.5">
+                <strong class="text-[var(--warning)]">Hafal Mati 6 Urusan Absolut Pusat:</strong>
+                <p>Singkatan: <strong>"POL-HAN-KAM-YUS-MON-AG"</strong></p>
+                <p>1. Politik Luar Negeri, 2. Pertahanan, 3. Keamanan, 4. Yustisi (Peradilan), 5. Moneter & Fiskal Nasional, 6. Agama.</p>
+                <p class="text-[var(--muted-foreground)]">Di luar 6 urusan itu (seperti Pendidikan, Kesehatan, Lingkungan) adalah <strong>Urusan Konkuren</strong>.</p>
+              </div>
+            </div>
+          </div>`
+      },
+      {
+        title: "Simulasi Kuis UAS (50 Soal)",
+        tag: "LATIHAN SOAL",
+        render: () => renderQuizHTML()
+      }
+    ];
+
+    const quizData = [
+      {
+            "q": "1. Penyerahan wewenang pemerintahan oleh pemerintah pusat kepada daerah otonom untuk mengatur dan mengurus urusan pemerintahan sendiri disebut asas...",
+            "opts": [
+                  "A. Sentralisasi",
+                  "B. Desentralisasi",
+                  "C. Dekonsentrasi",
+                  "D. Tugas Pembantuan"
+            ],
+            "ans": 1,
+            "exp": "Desentralisasi = PENYERAHAN wewenang kepada daerah otonom berdasarkan otonomi."
+      },
+      {
+            "q": "2. Pelimpahan sebagian urusan pemerintahan yang menjadi kewenangan pemerintah pusat kepada Gubernur sebagai Wakil Pemerintah Pusat (GWPP) disebut asas...",
+            "opts": [
+                  "A. Desentralisasi",
+                  "B. Dekonsentrasi",
+                  "C. Tugas Pembantuan",
+                  "D. Privatisasi"
+            ],
+            "ans": 1,
+            "exp": "Dekonsentrasi = PELIMPAHAN wewenang pusat kepada pejabat/instansi vertikal di daerah (GWPP)."
+      },
+      {
+            "q": "3. Penugasan dari pemerintah pusat kepada daerah otonom untuk melaksanakan sebagian urusan pusat disertai pembiayaan dan kewajiban melapor disebut...",
+            "opts": [
+                  "A. Desentralisasi Politik",
+                  "B. Dekonsentrasi Penuh",
+                  "C. Tugas Pembantuan (Medebewind)",
+                  "D. Otonomi Khusus"
+            ],
+            "ans": 2,
+            "exp": "Tugas Pembantuan (Medebewind) merupakan penugasan pelaksanaan urusan dari tingkat atas ke daerah/desa."
+      },
+      {
+            "q": "4. Kesatuan masyarakat hukum yang mempunyai batas wilayah serta berhak mengatur dan mengurus sendiri urusan pemerintahan dan kepentingan masyarakat setempat disebut...",
+            "opts": [
+                  "A. Wilayah Administratif",
+                  "B. Daerah Otonom",
+                  "C. Instansi Vertikal",
+                  "D. Provinsi Dekonsentratif"
+            ],
+            "ans": 1,
+            "exp": "Daerah otonom memiliki hak dan kewenangan mengatur rumah tangga sendiri (self-government)."
+      },
+      {
+            "q": "5. Sebaliknya, wilayah kerja perangkat pemerintah pusat atau gubernur sebagai wakil pemerintah pusat yang menyelenggarakan urusan pusat di daerah disebut...",
+            "opts": [
+                  "A. Daerah Otonom",
+                  "B. Wilayah Administratif",
+                  "C. Daerah Istimewa",
+                  "D. Badan Layanan Umum"
+            ],
+            "ans": 1,
+            "exp": "Wilayah administratif dibentuk berdasarkan asas dekonsentrasi, bukan otonomi."
+      },
+      {
+            "q": "6. Tujuan hakiki dari penyelenggaraan otonomi daerah dan administrasi pemerintahan daerah menurut BMP ADPU4440 adalah...",
+            "opts": [
+                  "A. Memperbanyak jumlah pejabat daerah",
+                  "B. Memisahkan daerah dari NKRI",
+                  "C. Meningkatkan kesejahteraan masyarakat melalui pelayanan publik yang lebih dekat dan responsif",
+                  "D. Menghapus peran pemerintah pusat"
+            ],
+            "ans": 2,
+            "exp": "Pelayanan publik yang prima dan kesejahteraan masyarakat daerah merupakan tujuan akhir otonomi daerah."
+      },
+      {
+            "q": "7. Landasan konstitusional utama dalam UUD NRI Tahun 1945 yang mengatur pembagian wilayah NKRI atas daerah provinsi dan kabupaten/kota serta prinsip otonomi seluas-luasnya adalah...",
+            "opts": [
+                  "A. Pasal 1 ayat (1)",
+                  "B. Pasal 18, 18A, dan 18B",
+                  "C. Pasal 28A",
+                  "D. Pasal 33"
+            ],
+            "ans": 1,
+            "exp": "Pasal 18, 18A, dan 18B UUD 1945 menjadi dasar hukum konstitusional pemerintahan daerah."
+      },
+      {
+            "q": "8. Sesuai PP No. 33 Tahun 2018, kedudukan Gubernur selain sebagai kepala daerah otonom provinsi juga berperan ganda sebagai...",
+            "opts": [
+                  "A. Ketua DPRD Provinsi",
+                  "B. Wakil Pemerintah Pusat (GWPP) di daerah",
+                  "C. Pimpinan BPK Perwakilan",
+                  "D. Hakim PTUN"
+            ],
+            "ans": 1,
+            "exp": "Gubernur berperan ganda: kepala daerah otonom sekaligus Wakil Pemerintah Pusat yang membina kab/kota."
+      },
+      {
+            "q": "9. Empat komponen pembentuk sistem administrasi pemerintahan daerah mencakup organisasi, kepegawaian, kewenangan, dan...",
+            "opts": [
+                  "A. Pertahanan militer",
+                  "B. Keuangan daerah",
+                  "C. Kebijakan luar negeri",
+                  "D. Mahkamah Agung"
+            ],
+            "ans": 1,
+            "exp": "4 pilar sistem Pemda: Organisasi, Kepegawaian, Kewenangan, dan Keuangan Daerah."
+      },
+      {
+            "q": "10. Hubungan antara pemerintah pusat dan daerah dalam Negara Kesatuan Republik Indonesia (NKRI) mencakup hubungan kewenangan, keuangan, pelayanan umum, serta...",
+            "opts": [
+                  "A. Hubungan diplomatik luar negeri",
+                  "B. Hubungan pembinaan dan pengawasan",
+                  "C. Hubungan koalisi partai",
+                  "D. Hubungan perjanjian internasional"
+            ],
+            "ans": 1,
+            "exp": "Dalam NKRI, otonomi daerah tetap berada dalam koridor pembinaan dan pengawasan pemerintah pusat."
+      },
+      {
+            "q": "11. Doktrin pembagian urusan yang menetapkan bahwa pemerintah daerah hanya boleh mengerjakan urusan yang secara eksplisit tercantum dalam undang-undang disebut...",
+            "opts": [
+                  "A. General Competence",
+                  "B. Open Arrangement",
+                  "C. Ultra Vires Doctrine",
+                  "D. Residual Power"
+            ],
+            "ans": 2,
+            "exp": "Ultra Vires membatasi daerah hanya pada daftar urusan yang dirinci secara tegas oleh pusat."
+      },
+      {
+            "q": "12. Sebaliknya, doktrin di mana daerah bebas mengurus urusan pemerintahan apa saja sepanjang bukan menjadi kewenangan mutlak pusat atau dilarang UU disebut...",
+            "opts": [
+                  "A. Ultra Vires Doctrine",
+                  "B. Open Arrangement / General Competence",
+                  "C. Sentralisasi Ketat",
+                  "D. Dekonsentrasi"
+            ],
+            "ans": 1,
+            "exp": "General Competence (Open Arrangement) memberi keleluasaan sisa kewenangan kepada daerah."
+      },
+      {
+            "q": "13. Undang-Undang Pemerintahan Daerah yang menandai dimulainya era desentralisasi radikal pasca-reformasi 1998 adalah...",
+            "opts": [
+                  "A. UU No. 5 Tahun 1974",
+                  "B. UU No. 22 Tahun 1999",
+                  "C. UU No. 32 Tahun 2004",
+                  "D. UU No. 23 Tahun 2014"
+            ],
+            "ans": 1,
+            "exp": "UU 22/1999 mengubah paradigma sentralistik era Orde Baru (UU 5/1974) menjadi otonomi luas."
+      },
+      {
+            "q": "14. Undang-Undang Pemerintahan Daerah yang saat ini berlaku sebagai pedoman utama klasifikasi urusan pemerintahan absolut, konkuren, dan umum adalah...",
+            "opts": [
+                  "A. UU No. 22 Tahun 1999",
+                  "B. UU No. 32 Tahun 2004",
+                  "C. UU No. 23 Tahun 2014",
+                  "D. UU No. 5 Tahun 1974"
+            ],
+            "ans": 2,
+            "exp": "UU No. 23 Tahun 2014 membagi urusan pemerintahan secara sistematis menjadi Absolut, Konkuren, dan Umum."
+      },
+      {
+            "q": "15. Enam urusan pemerintahan ABSOLUT yang sepenuhnya menjadi kewenangan pemerintah pusat menurut UU No. 23/2014 adalah...",
+            "opts": [
+                  "A. Pendidikan, Kesehatan, Sosial, Pekerjaan Umum, Lingkungan, Perhubungan",
+                  "B. Politik Luar Negeri, Pertahanan, Keamanan, Yustisi, Moneter & Fiskal Nasional, Agama",
+                  "C. Pariwisata, Pertanian, Perikanan, Kehutanan, Energi, Koperasi",
+                  "D. Kependudukan, Kebudayaan, Pemuda, Olahraga, Perpustakaan, Kearsipan"
+            ],
+            "ans": 1,
+            "exp": "Ingat akronim POL-HAN-KAM-YUS-MON-AG sebagai 6 urusan absolut pusat."
+      },
+      {
+            "q": "16. Urusan pemerintahan konkuren yang berkaitan langsung dengan Pelayanan Dasar dan wajib berpedoman pada Standar Pelayanan Minimal (SPM) meliputi...",
+            "opts": [
+                  "A. Pariwisata dan Kelautan",
+                  "B. Pendidikan, Kesehatan, PUPR, Perumahan Rakyat, Trantibumlinmas, Sosial",
+                  "C. Pertambangan dan Perdagangan",
+                  "D. Politik Luar Negeri dan Pertahanan"
+            ],
+            "ans": 1,
+            "exp": "Ada 6 urusan wajib pelayanan dasar: Pendidikan, Kesehatan, Pekerjaan Umum, Perumahan Rakyat, Ketentraman/Ketertiban, dan Sosial."
+      },
+      {
+            "q": "17. Bidang kelautan dan perikanan, pariwisata, pertanian, serta energi sumber daya mineral dalam UU No. 23/2014 dikategorikan sebagai...",
+            "opts": [
+                  "A. Urusan Absolut Pusat",
+                  "B. Urusan Konkuren Pilihan",
+                  "C. Urusan Wajib Pelayanan Dasar",
+                  "D. Urusan Darurat"
+            ],
+            "ans": 1,
+            "exp": "Urusan Konkuren Pilihan diselenggarakan sesuai potensi unggulan masing-masing daerah."
+      },
+      {
+            "q": "18. Urusan pemerintahan umum seperti pembinaan wawasan kebangsaan, ketahanan nasional, dan kerukunan umat beragama di daerah menjadi tanggung jawab...",
+            "opts": [
+                  "A. Kepala Daerah (Gubernur/Bupati/Walikota) atas penugasan Presiden",
+                  "B. Pihak Swasta",
+                  "C. Lembaga Swadaya Masyarakat",
+                  "D. BPK"
+            ],
+            "ans": 0,
+            "exp": "Urusan pemerintahan umum merupakan kewenangan Presiden yang pelaksanaannya dilimpahkan ke Kepala Daerah."
+      },
+      {
+            "q": "19. Kerja sama antardaerah berbatasan (seperti pengelolaan sampah regional Jabodetabek atau transportasi antar-kota) bertujuan untuk...",
+            "opts": [
+                  "A. Menghapus batas administratif masing-masing daerah",
+                  "B. Meningkatkan efisiensi pelayanan publik lintas batas dan mengatasi eksternalitas bersama",
+                  "C. Mengurangi peran DPRD",
+                  "D. Menghindari audit BPK"
+            ],
+            "ans": 1,
+            "exp": "Kerja sama antardaerah menciptakan skala ekonomi dan menyelesaikan persoalan lintas batas wilayah."
+      },
+      {
+            "q": "20. Dokumen kesepakatan awal antara Kepala Daerah dan DPRD yang memuat arah kebijakan ekonomi makro dan plafon anggaran sementara sebelum penyusunan RAPBD adalah...",
+            "opts": [
+                  "A. DPA-SKPD",
+                  "B. KUA dan PPAS",
+                  "C. SP2D",
+                  "D. LHP BPK"
+            ],
+            "ans": 1,
+            "exp": "KUA (Kebijakan Umum APBD) dan PPAS (Prioritas dan Plafon Anggaran Sementara) disepakati di tahap persiapan APBD."
+      },
+      {
+            "q": "21. Rencana kerja dan anggaran rinci yang disusun oleh setiap Organisasi Perangkat Daerah (OPD/SKPD) sebelum dirangkai menjadi RAPBD disebut...",
+            "opts": [
+                  "A. RKA-SKPD",
+                  "B. DPA-SKPD",
+                  "C. RPJPD",
+                  "D. Perda Retribusi"
+            ],
+            "ans": 0,
+            "exp": "RKA-SKPD adalah dokumen perencanaan anggaran unit kerja sebelum RAPBD disahkan."
+      },
+      {
+            "q": "22. Setelah RAPBD dibahas, disetujui bersama DPRD, dan ditetapkan menjadi Peraturan Daerah (Perda APBD), dasar hukum pelaksanaan pencairan anggaran oleh SKPD adalah...",
+            "opts": [
+                  "A. KUA-PPAS",
+                  "B. DPA-SKPD (Dokumen Pelaksanaan Anggaran)",
+                  "C. RKA-SKPD",
+                  "D. Nota Kesepahaman"
+            ],
+            "ans": 1,
+            "exp": "DPA-SKPD diterbitkan sebagai dokumen operasional untuk mengeksekusi belanja APBD."
+      },
+      {
+            "q": "23. Dokumen surat perintah pencairan dana yang diterbitkan oleh Bendahara Umum Daerah (BUD) untuk mencairkan dana dari kas daerah adalah...",
+            "opts": [
+                  "A. SPP",
+                  "B. SPM",
+                  "C. SP2D (Surat Perintah Pencairan Dana)",
+                  "D. RKA"
+            ],
+            "ans": 2,
+            "exp": "Alur pencairan kas daerah: SPP (Permintaan) → SPM (Membayar) → SP2D (Pencairan Dana)."
+      },
+      {
+            "q": "24. Fungsi APBD yang menyatakan bahwa anggaran daerah menjadi alat untuk memelihara dan mengupayakan keseimbangan fundamental perekonomian daerah disebut fungsi...",
+            "opts": [
+                  "A. Otorisasi",
+                  "B. Stabilisasi",
+                  "C. Pengawasan",
+                  "D. Distribusi"
+            ],
+            "ans": 1,
+            "exp": "6 fungsi anggaran: Otorisasi, Perencanaan, Pengawasan, Alokasi, Distribusi, dan Stabilisasi."
+      },
+      {
+            "q": "25. Sumber Pendapatan Asli Daerah (PAD) yang sah menurut regulasi keuangan daerah (UU HKPD) terdiri atas pajak daerah, retribusi daerah, hasil pengelolaan kekayaan daerah yang dipisahkan (BUMD), dan...",
+            "opts": [
+                  "A. Dana Alokasi Umum (DAU)",
+                  "B. Lain-lain PAD yang sah",
+                  "C. Dana Bagi Hasil (DBH)",
+                  "D. Utang Luar Negeri langsung"
+            ],
+            "ans": 1,
+            "exp": "DAU, DAK, dan DBH adalah Dana Transfer/Perimbangan dari pusat, bukan PAD."
+      },
+      {
+            "q": "26. Dana transfer dari pemerintah pusat kepada daerah yang bertujuan untuk mengatasi ketimpangan kemampuan keuangan antar-daerah (horizontal imbalance) adalah...",
+            "opts": [
+                  "A. Dana Alokasi Umum (DAU)",
+                  "B. Pajak Kendaraan Bermotor",
+                  "C. Retribusi Pasar",
+                  "D. Hibah Swasta"
+            ],
+            "ans": 0,
+            "exp": "DAU (block grant) berfungsi sebagai instrumen pemerataan kapasitas fiskal antardaerah."
+      },
+      {
+            "q": "27. Dana transfer pusat yang penggunaannya sudah ditentukan secara spesifik untuk mendanai kegiatan prioritas nasional di daerah (seperti bangun sekolah/puskesmas) disebut...",
+            "opts": [
+                  "A. DAU",
+                  "B. Dana Alokasi Khusus (DAK)",
+                  "C. Pajak Hotel",
+                  "D. Pendapatan Laba BUMD"
+            ],
+            "ans": 1,
+            "exp": "DAK bersifat earmarked (specific grant) untuk program prioritas nasional tertentu."
+      },
+      {
+            "q": "28. Model hubungan antara Kepala Daerah (Eksekutif) dan DPRD (Legislatif) di Indonesia menurut klasifikasi pemerintahan lokal mengarah pada sistem...",
+            "opts": [
+                  "A. Monarki Absolut",
+                  "B. Mayor and Council",
+                  "C. Komisariat Militer",
+                  "D. Dewan Tunggal tanpa Eksekutif"
+            ],
+            "ans": 1,
+            "exp": "Mayor and Council memisahkan fungsi eksekutif (Kepala Daerah) dan dewan perwakilan (DPRD) sebagai mitra sejajar."
+      },
+      {
+            "q": "29. Tiga fungsi konstitusional utama yang dimiliki oleh DPRD Provinsi maupun Kabupaten/Kota menurut UU No. 23/2014 adalah...",
+            "opts": [
+                  "A. Eksekutif, Yudikatif, dan Pertahanan",
+                  "B. Pembentukan Perda (Legislasi), Anggaran, dan Pengawasan",
+                  "C. Penyidikan, Penuntutan, dan Pemutusan Perkara",
+                  "D. Pencetakan uang dan Pajak Pusat"
+            ],
+            "ans": 1,
+            "exp": "DPRD menjalankan fungsi Pembentukan Perda, Anggaran (APBD), dan Pengawasan terhadap Pemda."
+      },
+      {
+            "q": "30. Unsur Perangkat Daerah yang bertugas membantu Kepala Daerah menyusun kebijakan dan mengoordinasikan secara administratif seluruh Dinas dan Badan Daerah adalah...",
+            "opts": [
+                  "A. Inspektorat Daerah",
+                  "B. Sekretariat Daerah (Setda)",
+                  "C. Dinas Pekerjaan Umum",
+                  "D. Kecamatan"
+            ],
+            "ans": 1,
+            "exp": "Sekretariat Daerah dipimpin Sekretaris Daerah (Sekda) sebagai motor penggerak koordinasi administratif Pemda."
+      },
+      {
+            "q": "31. Lembaga teknis/penunjang perangkat daerah yang bertugas menyusun perencanaan pembangunan daerah (RPJMD/RKPD) adalah...",
+            "opts": [
+                  "A. Satpol PP",
+                  "B. Bappeda (Badan Perencanaan Pembangunan Daerah)",
+                  "C. Dinas Sosial",
+                  "D. Kelurahan"
+            ],
+            "ans": 1,
+            "exp": "Bappeda adalah badan penunjang urusan perencanaan pembangunan daerah."
+      },
+      {
+            "q": "32. Dalam struktur perangkat daerah menurut UU No. 23/2014 dan PP No. 18/2016, kedudukan Kecamatan merupakan...",
+            "opts": [
+                  "A. Daerah otonom tersendiri",
+                  "B. Perangkat daerah kabupaten/kota yang dibentuk untuk meningkatkan koordinasi pemerintahan dan pelayanan publik",
+                  "C. Instansi vertikal kementerian pusat",
+                  "D. Lembaga yudikatif desa"
+            ],
+            "ans": 1,
+            "exp": "Kecamatan adalah perangkat daerah kab/kota yang dipimpin Camat (bukan daerah otonom terpisah)."
+      },
+      {
+            "q": "33. Lembaga seperti Kantor Pertanahan (BPN), Kepolisian Resor (Polres), dan Kanwil Kemenag yang beroperasi di wilayah kabupaten/kota dikategorikan sebagai...",
+            "opts": [
+                  "A. Dinas Daerah",
+                  "B. Instansi Vertikal Pemerintah Pusat",
+                  "C. Badan Usaha Milik Daerah",
+                  "D. Lembaga Legislatif"
+            ],
+            "ans": 1,
+            "exp": "Instansi vertikal adalah perwakilan kementerian/lembaga pusat yang menangani urusan absolut pusat di daerah."
+      },
+      {
+            "q": "34. Pengertian 'Pegawai Daerah' dalam administrasi kepegawaian daerah secara fiskal dan administratif merujuk pada...",
+            "opts": [
+                  "A. Pegawai swasta yang berdomisili di desa",
+                  "B. Aparatur Sipil Negara (PNS & PPPK) daerah yang pembinaan dan gajinya dibebankan pada APBD",
+                  "C. Anggota TNI/Polri yang bertugas di kota",
+                  "D. Konsultan lepas proyek"
+            ],
+            "ans": 1,
+            "exp": "Pegawai daerah bekerja pada instansi pemerintah daerah dan dibiayai APBD."
+      },
+      {
+            "q": "35. Prinsip Sistem Merit dalam pengelolaan ASN daerah mewajibkan pengangkatan, promosi, dan mutasi jabatan didasarkan pada...",
+            "opts": [
+                  "A. Kedekatan tim sukses pilkada",
+                  "B. Kualifikasi, kompetensi, dan kinerja secara adil tanpa diskriminasi",
+                  "C. Hubungan kekeluargaan",
+                  "D. Senioritas usia semata"
+            ],
+            "ans": 1,
+            "exp": "Sistem merit melindungi birokrasi daerah dari politisasi dan menjamin profesionalitas ASN."
+      },
+      {
+            "q": "36. Dokumen perencanaan pembangunan daerah berjangka waktu 5 tahun yang merupakan penjabaran resmi dari visi, misi, dan program Kepala Daerah terpilih adalah...",
+            "opts": [
+                  "A. RPJPD",
+                  "B. RPJMD (Rencana Pembangunan Jangka Menengah Daerah)",
+                  "C. DPA",
+                  "D. Perbup Harian"
+            ],
+            "ans": 1,
+            "exp": "RPJMD berlaku 5 tahun mengikuti masa jabatan Kepala Daerah dan wajib ditetapkan lewat Perda."
+      },
+      {
+            "q": "37. Peraturan Daerah (Perda) Kabupaten/Kota ditetapkan oleh Bupati/Walikota setelah memperoleh...",
+            "opts": [
+                  "A. Izin pribadi Camat",
+                  "B. Persetujuan bersama DPRD Kabupaten/Kota",
+                  "C. Pengesahan Mahkamah Konstitusi",
+                  "D. Hasil survei swasta"
+            ],
+            "ans": 1,
+            "exp": "Pembentukan Perda membutuhkan persetujuan bersama antara Kepala Daerah dan DPRD."
+      },
+      {
+            "q": "38. Menurut Finance (1994 dalam Badjuri & Yuwono), evaluasi kebijakan daerah yang memeriksa apakah sistem dan prosedur evaluasi yang digunakan sudah tepat dan sahih disebut...",
+            "opts": [
+                  "A. Evaluasi Kecocokan (Appropriateness)",
+                  "B. Evaluasi Efektivitas",
+                  "C. Evaluasi Efisiensi",
+                  "D. Evaluasi Meta (Meta-Evaluation)"
+            ],
+            "ans": 3,
+            "exp": "Meta-evaluation adalah evaluasi terhadap kualitas pelaksanaan evaluasi itu sendiri."
+      },
+      {
+            "q": "39. Standar tolok ukur jenis dan mutu pelayanan dasar yang berhak diperoleh setiap warga negara secara minimal di daerah disebut...",
+            "opts": [
+                  "A. KUA-PPAS",
+                  "B. SPM (Standar Pelayanan Minimal)",
+                  "C. SOP Internal",
+                  "D. Renstra"
+            ],
+            "ans": 1,
+            "exp": "SPM menjamin standar minimal layanan dasar wajib (kesehatan, pendidikan, dll.) di seluruh daerah Indonesia."
+      },
+      {
+            "q": "40. Inovasi pembentukan Mal Pelayanan Publik (MPP) di berbagai pemerintah kabupaten/kota bertujuan untuk...",
+            "opts": [
+                  "A. Memperpanjang alur birokrasi",
+                  "B. Mengintegrasikan berbagai layanan perizinan dan administrasi kependudukan dalam satu atap secara cepat dan transparan",
+                  "C. Menghapus seluruh instansi vertikal",
+                  "D. Menaikkan tarif pajak"
+            ],
+            "ans": 1,
+            "exp": "MPP memudahkan warga mengurus beragam layanan pusat, daerah, dan BUMN secara terpadu."
+      },
+      {
+            "q": "41. Aparat Pengawasan Intern Pemerintah (APIP) yang berada langsung di bawah Kepala Daerah dan bertugas mengaudit ketaatan serta kinerja perangkat daerah adalah...",
+            "opts": [
+                  "A. BPK",
+                  "B. Inspektorat Daerah",
+                  "C. Ombudsman RI",
+                  "D. KPK"
+            ],
+            "ans": 1,
+            "exp": "Inspektorat Daerah adalah pengawas internal pemerintah daerah."
+      },
+      {
+            "q": "42. Lembaga tinggi negara independen yang melaksanakan pengawasan EKSTERNAL terhadap pengelolaan dan tanggung jawab keuangan pemerintah daerah adalah...",
+            "opts": [
+                  "A. Inspektorat Provinsi",
+                  "B. BPK (Badan Pemeriksa Keuangan)",
+                  "C. Sekretaris Daerah",
+                  "D. Bappeda"
+            ],
+            "ans": 1,
+            "exp": "BPK melakukan audit eksternal dan menyerahkan Laporan Hasil Pemeriksaan (LHP) kepada DPRD dan DPR."
+      },
+      {
+            "q": "43. Pengawasan politik yang dilaksanakan oleh DPRD terhadap kebijakan Kepala Daerah dapat diwujudkan melalui penggunaan hak...",
+            "opts": [
+                  "A. Penahanan langsung",
+                  "B. Interpelasi, Angket, dan Menyatakan Pendapat",
+                  "C. Penyitaan aset negara",
+                  "D. Pengangkatan hakim"
+            ],
+            "ans": 1,
+            "exp": "Hak interpelasi (meminta keterangan), hak angket (penyelidikan), dan menyatakan pendapat adalah instrumen pengawasan politik DPRD."
+      },
+      {
+            "q": "44. Lembaga negara pengawas eksternal pelayanan publik yang berwenang menerima dan menindaklanjuti laporan masyarakat atas dugaan maladministrasi aparatur daerah adalah...",
+            "opts": [
+                  "A. Ombudsman Republik Indonesia",
+                  "B. Bank Indonesia",
+                  "C. Mahkamah Konstitusi",
+                  "D. KPU"
+            ],
+            "ans": 0,
+            "exp": "Ombudsman RI mengawasi penyelenggaraan pelayanan publik berdasarkan UU No. 37/2008 & UU No. 25/2009."
+      },
+      {
+            "q": "45. Apabila warga atau badan hukum merasa dirugikan oleh Keputusan Tata Usaha Negara (KTUN) yang dikeluarkan oleh Bupati/Kepala Dinas (seperti pencabutan izin usaha sepihak), gugatan diajukan ke...",
+            "opts": [
+                  "A. Mahkamah Konstitusi",
+                  "B. PTUN (Pengadilan Tata Usaha Negara)",
+                  "C. Pengadilan Agama",
+                  "D. Dewan Pers"
+            ],
+            "ans": 1,
+            "exp": "PTUN berwenang memeriksa dan memutus sengketa tata usaha negara akibat KTUN pejabat pemerintahan."
+      },
+      {
+            "q": "46. Uji materi (Judicial Review) terhadap Peraturan Daerah (Perda) yang diduga bertentangan dengan Undang-Undang di atasnya menjadi kewenangan...",
+            "opts": [
+                  "A. Mahkamah Agung (MA)",
+                  "B. Mahkamah Konstitusi (MK)",
+                  "C. Kejaksaan Agung",
+                  "D. Inspektorat Jenderal"
+            ],
+            "ans": 0,
+            "exp": "MA berwenang menguji peraturan perundang-undangan di bawah UU (termasuk PP, Perpres, Perda) terhadap UU."
+      },
+      {
+            "q": "47. Pengawasan masyarakat (social control) terhadap penyelenggaraan pemerintahan daerah dapat disalurkan secara efektif melalui...",
+            "opts": [
+                  "A. Penyebaran berita bohong tanpa verifikasi",
+                  "B. Musrenbang, forum pengaduan SP4N-LAPOR!, pers, dan organisasi masyarakat sipil",
+                  "C. Pembubaran kantor camat",
+                  "D. Pemboikotan pemilu"
+            ],
+            "ans": 1,
+            "exp": "Saluran partisipasi formal dan pengawasan publik meliputi Musrenbang, SP4N-LAPOR!, media massa, dan LSM."
+      },
+      {
+            "q": "48. Pembinaan penyelenggaraan pemerintahan daerah kabupaten/kota secara umum dan teknis dikoordinasikan oleh...",
+            "opts": [
+                  "A. Menteri Luar Negeri",
+                  "B. Menteri Dalam Negeri (Kemendagri) dan Gubernur sebagai Wakil Pemerintah Pusat",
+                  "C. Ketua Pengadilan Negeri",
+                  "D. Panglima TNI"
+            ],
+            "ans": 1,
+            "exp": "Kemendagri membina provinsi, dan Gubernur sebagai GWPP membina serta mengawasi kab/kota."
+      },
+      {
+            "q": "49. Contoh pelanggaran Asas Desentralisasi dan Otonomi Daerah dalam hubungan pusat-daerah terjadi apabila...",
+            "opts": [
+                  "A. Pusat menyusun norma, standar, prosedur, dan kriteria (NSPK)",
+                  "B. Pusat mengambil alih seluruh kewenangan perizinan kecil di daerah tanpa dasar UU dan melumpuhkan prakarsa lokal",
+                  "C. Gubernur mengoordinasikan penyusunan RKPD",
+                  "D. DPRD membahas RAPBD bersama Bupati"
+            ],
+            "ans": 1,
+            "exp": "Resentralisasi berlebihan tanpa dasar pembagian urusan yang sah menyalahi semangat otonomi daerah Pasal 18 UUD 1945."
+      },
+      {
+            "q": "50. Dalam perspektif Good Local Governance, syarat utama agar otonomi daerah tidak berubah menjadi 'otonomi korupsi para raja kecil di daerah' adalah...",
+            "opts": [
+                  "A. Menghapus seluruh pemilihan kepala daerah",
+                  "B. Memperkuat transparansi anggaran, sistem merit ASN, pengawasan DPRD/BPK, serta partisipasi kritis warga",
+                  "C. Menutup akses informasi APBD",
+                  "D. Mengurangi jumlah inspektorat"
+            ],
+            "ans": 1,
+            "exp": "Otonomi harus diimbangi checks and balances yang kuat (transparansi, audit, meritokrasi, dan kontrol publik)."
+      }
+];
+
+
+    let userAnswers = {};
+    let quizFilter = 'all';
+
+    function renderQuizHTML() {
+      const answeredCount = Object.keys(userAnswers).length;
+      const correctCount = Object.entries(userAnswers).filter(([qi, oi]) => quizData[qi].ans === oi).length;
+      const pct = answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0;
+
+      const filtered = quizData.map((item, qi) => ({ item, qi })).filter(({ item, qi }) => {
+        if (quizFilter === 'unanswered') return userAnswers[qi] === undefined;
+        if (quizFilter === 'wrong') return userAnswers[qi] !== undefined && userAnswers[qi] !== item.ans;
+        return true;
+      });
+
+      return `
+        <div class="space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border,#cbd5e1)] pb-3">
+            <div>
+              <h2 class="text-xl font-bold">Simulasi Kuis UAS (${quizData.length} Soal)</h2>
+              <p class="text-xs text-[var(--muted-foreground,#475569)]">Dijawab: <strong>${answeredCount}/${quizData.length}</strong> • Benar: <strong class="text-emerald-600">${correctCount}</strong> • Akurasi: <strong>${pct}%</strong></p>
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5 text-xs">
+              <button onclick="setFilter('all')" class="px-2.5 py-1 rounded-lg border ${quizFilter==='all'?'bg-[var(--primary,#1d4ed8)] text-white border-transparent font-bold':'border-[var(--border,#cbd5e1)]'}">Semua (${quizData.length})</button>
+              <button onclick="setFilter('unanswered')" class="px-2.5 py-1 rounded-lg border ${quizFilter==='unanswered'?'bg-[var(--primary,#1d4ed8)] text-white border-transparent font-bold':'border-[var(--border,#cbd5e1)]'}">Belum (${quizData.length - answeredCount})</button>
+              <button onclick="setFilter('wrong')" class="px-2.5 py-1 rounded-lg border ${quizFilter==='wrong'?'bg-[var(--primary,#1d4ed8)] text-white border-transparent font-bold':'border-[var(--border,#cbd5e1)]'}">Salah</button>
+              <button onclick="resetQuiz()" class="px-2.5 py-1 rounded-lg border border-rose-400 text-rose-600 hover:bg-rose-50 font-semibold">Reset</button>
+            </div>
+          </div>
+          <div class="space-y-3 max-h-[440px] overflow-y-auto pr-1">
+            ${filtered.length === 0 ? '<p class="text-xs text-center py-8 text-[var(--muted-foreground,#475569)]">Tidak ada soal pada filter ini.</p>' : filtered.map(({ item, qi }) => {
+              const ua = userAnswers[qi];
+              const isDone = ua !== undefined;
+              return `
+              <div class="p-3.5 rounded-xl border border-[var(--border,#cbd5e1)] bg-[var(--background,#f8fafc)] space-y-2 text-xs">
+                <p class="font-semibold leading-relaxed">${item.q}</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                  ${item.opts.map((opt, oi) => {
+                    let cls = "border-[var(--border,#cbd5e1)] hover:bg-[var(--secondary,#e2e8f0)]";
+                    if (isDone) {
+                      if (oi === item.ans) cls = "border-emerald-600 bg-emerald-600 text-white font-bold";
+                      else if (oi === ua && ua !== item.ans) cls = "border-rose-600 bg-rose-600 text-white";
+                      else cls = "border-[var(--border,#cbd5e1)] opacity-60";
+                    }
+                    return `<button ${isDone?'disabled':''} onclick="checkAns(${qi}, ${oi})" class="text-left px-3 py-1.5 rounded-lg border transition ${cls}">${opt}</button>`;
+                  }).join('')}
+                </div>
+                ${isDone ? `<p class="text-[11px] p-2 rounded bg-[var(--secondary,#e2e8f0)]">${ua === item.ans ? '✓ Benar! ' : '✗ Kurang tepat. '}${item.exp}</p>` : ''}
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`;
+    }
+
+    function setFilter(f) { quizFilter = f; renderPage(); }
+    function resetQuiz() { userAnswers = {}; quizFilter = 'all'; renderPage(); }
+    function checkAns(qi, oi) { userAnswers[qi] = oi; renderPage(); }
+
+    let current = 0;
+    function renderPage() {
+      const container = document.getElementById('pageContent');
+      container.classList.remove('flip-enter');
+      void container.offsetWidth;
+      container.classList.add('flip-enter');
+      container.innerHTML = pages[current].render();
+      document.getElementById('pageBadge').textContent = `${current + 1} / ${pages.length}`;
+      document.getElementById('progressBar').style.width = `${((current + 1) / pages.length) * 100}%`;
+      document.getElementById('prevBtn').disabled = current === 0;
+      document.getElementById('nextBtn').disabled = current === pages.length - 1;
+      renderToc();
+    }
+
+    function renderToc() {
+      const toc = document.getElementById('tocDrawer');
+      toc.innerHTML = pages.map((p, idx) => `
+        <button onclick="goTo(${idx})" class="text-left p-2 rounded-lg border text-xs transition ${idx === current ? 'border-[var(--primary)] bg-[var(--secondary)] font-bold' : 'border-[var(--border)] hover:bg-[var(--secondary)]'}">
+          <div class="text-[10px] text-[var(--muted-foreground)]">${p.tag}</div>
+          <div class="truncate">${p.title}</div>
+        </button>
+      `).join('');
+    }
+
+    function toggleToc() { document.getElementById('tocDrawer').classList.toggle('hidden'); }
+    function goTo(idx) { current = idx; renderPage(); document.getElementById('tocDrawer').classList.add('hidden'); }
+    function nextPage() { if (current < pages.length - 1) { current++; renderPage(); } }
+    function prevPage() { if (current > 0) { current--; renderPage(); } }
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') nextPage();
+      if (e.key === 'ArrowLeft') prevPage();
+    });
+
+    renderPage();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flipbook UAS — FSAP4401 Kepemimpinan & Pengambilan Keputusan</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    /* Multi-device fallback vars without overriding :root in Antigravity */
+    body {
+      background-color: var(--background, #f8fafc);
+      color: var(--foreground, #0f172a);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .fb-card { background-color: var(--card, #ffffff); border-color: var(--border, #cbd5e1); }
+    .fb-muted { color: var(--muted-foreground, #475569); }
+    .fb-sec { background-color: var(--secondary, #e2e8f0); color: var(--secondary-foreground, #0f172a); }
+    .fb-pri { background-color: var(--primary, #1d4ed8); color: var(--primary-foreground, #ffffff); }
+    @keyframes pageFlip {
+      0% { opacity: 0; transform: perspective(1200px) rotateY(-8deg) scale(0.98); }
+      100% { opacity: 1; transform: perspective(1200px) rotateY(0deg) scale(1); }
+    }
+    .flip-enter { animation: pageFlip 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+  </style>
+</head>
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased min-h-screen p-4 md:p-6">
+  <div class="max-w-5xl mx-auto space-y-4">
+    <!-- Top Bar -->
+    <header class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 flex flex-wrap items-center justify-between gap-3 shadow-sm">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-[var(--primary)] text-[var(--primary-foreground)]">FSAP4401 / ADPU4334</span>
+          <span class="text-xs font-medium text-[var(--muted-foreground)]">Sabtu, 28 Nov 2026 • 11:30–13:00 WIB • UOLP UT</span>
+        </div>
+        <h1 class="text-lg font-bold mt-1">Flipbook Rangkuman UAS: Kepemimpinan & Pengambilan Keputusan</h1>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="toggleToc()" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[var(--border)] hover:bg-[var(--secondary)] transition">Daftar Halaman</button>
+        <span id="pageBadge" class="px-3 py-1.5 text-xs font-mono font-bold rounded-lg bg-[var(--secondary)] text-[var(--secondary-foreground)]">1 / 11</span>
+      </div>
+    </header>
+
+    <!-- Progress Bar -->
+    <div class="w-full h-1.5 bg-[var(--secondary)] rounded-full overflow-hidden">
+      <div id="progressBar" class="h-full bg-[var(--primary)] transition-all duration-300" style="width: 9%"></div>
+    </div>
+
+    <!-- TOC Drawer -->
+    <nav id="tocDrawer" class="hidden bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"></nav>
+
+    <!-- Flipbook Book Container -->
+    <main class="relative bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-md overflow-hidden">
+      <div id="bookSpine" class="h-1.5 w-full bg-gradient-to-r from-[var(--primary)] via-[var(--chart-2)] to-[var(--primary)]"></div>
+      <div id="pageContent" class="p-6 md:p-8 min-h-[520px] flip-enter"></div>
+
+      <!-- Bottom Navigation -->
+      <footer class="border-t border-[var(--border)] px-6 py-3.5 flex items-center justify-between bg-[var(--sidebar)]">
+        <button id="prevBtn" onclick="prevPage()" class="px-4 py-2 text-xs font-semibold rounded-lg border border-[var(--border)] bg-[var(--card)] hover:bg-[var(--secondary)] disabled:opacity-40 transition">← Sebelumnya</button>
+        <div class="text-xs text-[var(--muted-foreground)] hidden sm:block">Gunakan tombol panah <kbd class="px-1.5 py-0.5 border border-[var(--border)] rounded">←</kbd> <kbd class="px-1.5 py-0.5 border border-[var(--border)] rounded">→</kbd> untuk membalik halaman</div>
+        <button id="nextBtn" onclick="nextPage()" class="px-4 py-2 text-xs font-semibold rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 disabled:opacity-40 transition">Berikutnya →</button>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    const pages = [
+      {
+        title: "Sampul & Info Ujian",
+        tag: "SAMPUL",
+        render: () => `
+          <div class="flex flex-col justify-between h-full space-y-6 py-4">
+            <div class="space-y-3">
+              <span class="inline-block px-3 py-1 text-xs font-bold rounded-full bg-[var(--secondary)] text-[var(--primary)]">PERSIAPAN UAS UOLP • SEMESTER 7</span>
+              <h2 class="text-3xl font-extrabold tracking-tight">Kepemimpinan & Pengambilan Keputusan</h2>
+              <p class="text-sm text-[var(--muted-foreground)]">Kode Mata Kuliah: <strong>FSAP4401</strong> | BMP Utama: <strong>ADPU4334 (Edisi 2, Enceng dkk.)</strong> | 3 SKS (9 Modul)</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-2">
+                <h3 class="text-sm font-bold text-[var(--primary)]">Detail Pelaksanaan Ujian</h3>
+                <ul class="text-xs space-y-1.5 text-[var(--muted-foreground)]">
+                  <li>• <strong>Hari/Tanggal:</strong> Sabtu, 28 November 2026</li>
+                  <li>• <strong>Waktu:</strong> Sesi 3 (11:30 – 13:00 WIB)</li>
+                  <li>• <strong>Lokasi:</strong> UPJ Bintaro, Gedung B Lt. 8 (Ruang 3 / Kursi 19)</li>
+                  
+                </ul>
+              </div>
+              <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-2">
+                <h3 class="text-sm font-bold text-[var(--success)]">Fokus Bobot Terbesar di RPS</h3>
+                <ul class="text-xs space-y-1.5 text-[var(--muted-foreground)]">
+                  <li>• <strong>Modul 5 (20%):</strong> Gaya & Keterampilan Kepemimpinan</li>
+                  <li>• <strong>Modul 6 (12,5%):</strong> Kekuasaan, Konflik, Etika, Lintas Budaya</li>
+                  <li>• <strong>Modul 9 (12,5%):</strong> Memimpin Perubahan (Kotter, Lewin, Senge)</li>
+                  <li>• <strong>Modul 8 (10%):</strong> Pengembangan Tim & Kolaborasi</li>
+                </ul>
+              </div>
+            </div>
+            <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--secondary)] text-xs">
+              <strong>Tips UOLP:</strong> Soal PG Universitas Terbuka sangat sering menguji <em>perbedaan antar tokoh</em> (misal: Ohio State vs Michigan, Fiedler vs Hersey-Blanchard, Rasional vs Inkremental Lindblom). Klik <strong>Berikutnya →</strong> untuk mulai membalik modul!
+            </div>
+          </div>`
+      },
+      {
+        title: "Modul 1: Dasar Kepemimpinan",
+        tag: "MODUL 1 (7,5%)",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Modul 1: Dasar-Dasar Kepemimpinan</h2>
+              <span class="text-xs font-mono text-[var(--muted-foreground)]">CPU-MK 1</span>
+            </div>
+            <p class="text-sm leading-relaxed"><strong>Kepemimpinan</strong> adalah proses memengaruhi orang lain atau kelompok untuk mencapai tujuan organisasi secara sukarela dan efektif (Northouse, 2019; Enceng dkk., 2016).</p>
+            <div class="overflow-x-auto">
+              <table class="w-full text-xs border border-[var(--border)] rounded-lg overflow-hidden">
+                <thead class="bg-[var(--secondary)]">
+                  <tr>
+                    <th class="p-2.5 text-left border-b border-[var(--border)]">Dimensi (Wirawan, 2023)</th>
+                    <th class="p-2.5 text-left border-b border-[var(--border)]">Administrator</th>
+                    <th class="p-2.5 text-left border-b border-[var(--border)]">Manajer</th>
+                    <th class="p-2.5 text-left border-b border-[var(--border)]">Pemimpin (Leader)</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-[var(--border)]">
+                  <tr><td class="p-2.5 font-semibold">Fokus Utama</td><td class="p-2.5">Kepatuhan aturan, prosedur, ketertiban sistem</td><td class="p-2.5">Efisiensi, perencanaan, kontrol sumber daya</td><td class="p-2.5">Visi masa depan, inovasi, inspirasi pengikut</td></tr>
+                  <tr><td class="p-2.5 font-semibold">Orientasi</td><td class="p-2.5"><em>Doing things by the book</em></td><td class="p-2.5"><em>Doing things right</em> (Efisiensi)</td><td class="p-2.5"><em>Doing the right things</em> (Efektivitas)</td></tr>
+                  <tr><td class="p-2.5 font-semibold">Sumber Otoritas</td><td class="p-2.5">Jabatan struktural / legal-formal</td><td class="p-2.5">Posisi manajerial & kewenangan</td><td class="p-2.5">Pengaruh personal, kharisma, keteladanan</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              <div class="p-3.5 rounded-lg border border-[var(--border)] bg-[var(--background)]">
+                <strong class="text-[var(--primary)]">Pemimpin Formal vs Informal:</strong><br/>
+                • <strong>Formal:</strong> Diangkat melalui SK/jabatan resmi, memiliki wewenang struktural.<br/>
+                • <strong>Informal:</strong> Diakui kelompok karena wibawa/keahlian tanpa SK jabatan.
+              </div>
+              <div class="p-3.5 rounded-lg border border-[var(--border)] bg-[var(--background)]">
+                <strong class="text-[var(--primary)]">4 Kecerdasan Pemimpin:</strong><br/>
+                • <strong>IQ</strong> (Intelektual/Analisis), <strong>EQ</strong> (Emosional/Empati), <strong>AQ</strong> (Adversitas/Ketangguhan), <strong>SQ</strong> (Spiritual/Nilai Etis).
+              </div>
+            </div>
+          </div>`
+      },
+      {
+        title: "Modul 2: Teori Klasik & Sifat",
+        tag: "MODUL 2 (5%)",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Modul 2: Teori Klasik, Sifat & Perilaku</h2>
+              <span class="text-xs font-mono text-[var(--muted-foreground)]">CPU-MK 2</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-2">
+                <h3 class="font-bold text-sm text-[var(--primary)]">1. Great Man & Trait Theory</h3>
+                <p><strong>Great Man (Carlyle):</strong> Pemimpin <em>dilahirkan</em> (bawaan genetik/karisma alamiah), bukan dibentuk.</p>
+                <p><strong>Trait Theory (Stogdill, Mann):</strong> Mengidentifikasi ciri fisik, intelektual, dan kepribadian. <em>Temuan kunci Stogdill:</em> sifat saja tidak cukup — efektivitas bergantung juga pada <strong>faktor situasi</strong>.</p>
+              </div>
+              <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-2">
+                <h3 class="font-bold text-sm text-[var(--primary)]">2. Teori Perilaku (Behavioral)</h3>
+                <p>Fokus pada <em>apa yang dilakukan pemimpin</em> (dapat dilatih/dibentuk):</p>
+                <ul class="space-y-1">
+                  <li>• <strong>Ohio State Studies:</strong> <em>Initiating Structure</em> (tugas) vs <em>Consideration</em> (relasi).</li>
+                  <li>• <strong>Michigan Studies:</strong> <em>Production-centered</em> vs <em>Employee-centered</em>.</li>
+                </ul>
+              </div>
+            </div>
+            <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--secondary)] text-xs space-y-1.5">
+              <h3 class="font-bold text-sm">Managerial Grid (Blake & Mouton) — 5 Gaya Utama:</h3>
+              <p>Memetakan perhatian pada Produksi (sumbu X: 1–9) vs Orang (sumbu Y: 1–9):</p>
+              <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1">
+                <div class="p-2 rounded bg-[var(--card)] border border-[var(--border)]"><strong>(1,1) Impoverished</strong><br/>Minimal tugas & orang</div>
+                <div class="p-2 rounded bg-[var(--card)] border border-[var(--border)]"><strong>(9,1) Authority-Compliance</strong><br/>Fokus tugas keras</div>
+                <div class="p-2 rounded bg-[var(--card)] border border-[var(--border)]"><strong>(1,9) Country Club</strong><br/>Fokus kenyamanan</div>
+                <div class="p-2 rounded bg-[var(--card)] border border-[var(--border)]"><strong>(5,5) Middle of Road</strong><br/>Kompromi sedang</div>
+                <div class="p-2 rounded bg-[var(--card)] border border-[var(--primary)]"><strong>(9,9) Team Mgmt</strong><br/>Ideal (tinggi keduanya)</div>
+              </div>
+            </div>
+          </div>`
+      },
+      {
+        title: "Modul 3: Kontingensi & Kontemporer",
+        tag: "MODUL 3 (5%)",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Modul 3: Teori Kontingensi & Kontemporer</h2>
+              <span class="text-xs font-mono text-[var(--muted-foreground)]">CPU-MK 3</span>
+            </div>
+            <div class="space-y-3 text-xs">
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)]">
+                <strong class="text-sm text-[var(--primary)]">A. Model Kontingensi Fiedler (LPC - Least Preferred Coworker)</strong>
+                <p class="mt-1">Gaya pemimpin dianggap <em>tetap</em> (task-oriented vs relationship-oriented), sehingga situasinya yang harus disesuaikan melalui 3 dimensi: (1) Hubungan pemimpin-anggota, (2) Struktur tugas, (3) Kekuasaan posisi.</p>
+              </div>
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)]">
+                <strong class="text-sm text-[var(--primary)]">B. Situational Leadership Theory (Hersey & Blanchard) — WAJIB HAFAL!</strong>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
+                  <div class="p-2 rounded bg-[var(--secondary)]"><strong>S1: Telling (Directing)</strong><br/>Tugas Tinggi, Relasi Rendah → Kematangan R1 (Mampu -, Mau -)</div>
+                  <div class="p-2 rounded bg-[var(--secondary)]"><strong>S2: Selling (Coaching)</strong><br/>Tugas Tinggi, Relasi Tinggi → R2 (Mampu -, Mau +)</div>
+                  <div class="p-2 rounded bg-[var(--secondary)]"><strong>S3: Participating</strong><br/>Tugas Rendah, Relasi Tinggi → R3 (Mampu +, Mau -)</div>
+                  <div class="p-2 rounded bg-[var(--secondary)]"><strong>S4: Delegating</strong><br/>Tugas Rendah, Relasi Rendah → R4 (Mampu +, Mau +)</div>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)]">
+                  <strong class="text-[var(--primary)]">C. Path-Goal Theory (Robert House)</strong><br/>
+                  Pemimpin memfasilitasi jalur agar bawahan mencapai tujuan: <em>Directive, Supportive, Participative, Achievement-Oriented</em>.
+                </div>
+                <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)]">
+                  <strong class="text-[var(--primary)]">D. Transaksional vs Transformasional (Burns & Bass)</strong><br/>
+                  • <strong>Transaksional:</strong> Pertukaran imbalan/sanksi (<em>Contingent Reward, Mgmt by Exception</em>).<br/>
+                  • <strong>Transformasional (4I):</strong> <em>Idealized Influence, Inspirational Motivation, Intellectual Stimulation, Individualized Consideration</em>.
+                </div>
+              </div>
+            </div>
+          </div>`
+      },
+      {
+        title: "Modul 4 & 5: Peran, Gaya & Keterampilan",
+        tag: "MODUL 4 & 5 (25%)",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Modul 4 & 5: Peran, Gaya & Keterampilan</h2>
+              <span class="text-xs font-mono text-[var(--muted-foreground)]">CPU-MK 4 & 5 (Bobot 25%)</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)]">
+                <strong class="text-sm text-[var(--primary)]">Gaya Otoriter / Otokratis</strong>
+                <p class="mt-1">Keputusan terpusat pada pemimpin, kontrol ketat. <em>Efektif saat:</em> krisis darurat, waktu sempit, bawahan belum terampil.</p>
+              </div>
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)]">
+                <strong class="text-sm text-[var(--success)]">Gaya Demokratis</strong>
+                <p class="mt-1">Melibatkan partisipasi bawahan dalam musyawarah. <em>Efektif saat:</em> butuh komitmen tinggi, tim kompeten, masalah kompleks.</p>
+              </div>
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)]">
+                <strong class="text-sm text-[var(--warning)]">Gaya Laissez-Faire (Bebas)</strong>
+                <p class="mt-1">Otonomi penuh pada bawahan. <em>Efektif saat:</em> tim terdiri dari pakar/ahli mandiri (peneliti, akademisi senior).</p>
+              </div>
+            </div>
+            <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--secondary)] text-xs space-y-2">
+              <h3 class="font-bold text-sm">4 Peran Utama Pemimpin (Modul 4) & Keterampilan Inti (Modul 5):</h3>
+              <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <li>• <strong>Peran Perumusan Visi:</strong> Menetapkan arah jangka panjang organisasi.</li>
+                <li>• <strong>Peran Pengendalian & Relasi:</strong> Menjaga koordinasi antarunit kerja.</li>
+                <li>• <strong>Peran Pembangkit Semangat:</strong> Motivasi & keteladanan moral.</li>
+                <li>• <strong>Peran Penyampaian Informasi:</strong> Komunikasi strategis dua arah.</li>
+              </ul>
+              <p class="pt-1 border-t border-[var(--border)]"><strong>Tingkatan Perencanaan Pemimpin:</strong> <em>Strategis</em> (Pucuk pimpinan, jangka panjang), <em>Taktis</em> (Manajer menengah, alokasi sumber daya), <em>Operasional</em> (Lini depan, jadwal harian).</p>
+            </div>
+          </div>`
+      },
+      {
+        title: "Modul 6: Tantangan Kepemimpinan",
+        tag: "MODUL 6 (12,5%)",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Modul 6: Tantangan-Tantangan Kepemimpinan</h2>
+              <span class="text-xs font-mono text-[var(--muted-foreground)]">CPU-MK 6</span>
+            </div>
+            <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs space-y-2">
+              <h3 class="font-bold text-sm text-[var(--primary)]">5 Basis Kekuasaan (French & Raven) — Sering Muncul di UAS!</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-5 gap-2">
+                <div class="p-2.5 rounded bg-[var(--secondary)]"><strong>1. Legitimate</strong><br/>Hak jabatan resmi (Positional)</div>
+                <div class="p-2.5 rounded bg-[var(--secondary)]"><strong>2. Reward</strong><br/>Kemampuan beri bonus/promosi</div>
+                <div class="p-2.5 rounded bg-[var(--secondary)]"><strong>3. Coercive</strong><br/>Ancaman sanksi atau hukuman</div>
+                <div class="p-2.5 rounded bg-[var(--secondary)]"><strong>4. Expert</strong><br/>Keahlian/ilmu khusus (Personal)</div>
+                <div class="p-2.5 rounded bg-[var(--secondary)]"><strong>5. Referent</strong><br/>Karisma, keteladanan, disegani</div>
+              </div>
+              <p class="text-[var(--muted-foreground)]"><em>Catatan Ujian:</em> Kekuasaan <strong>Expert & Referent</strong> terbukti menghasilkan komitmen tertinggi dibanding Coercive/Legitimate.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)]">
+                <strong class="text-[var(--primary)]">Konflik Fungsional vs Disfungsional:</strong><br/>
+                • <strong>Fungsional:</strong> Memicu ide kreatif & perbaikan kinerja.<br/>
+                • <strong>Disfungsional:</strong> Merusak relasi, menghambat tujuan organisasi.
+              </div>
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)]">
+                <strong class="text-[var(--primary)]">Lintas Budaya (Hofstede) & Etika Publik:</strong><br/>
+                Dimensi budaya: <em>Power Distance</em> (jarak kekuasaan), <em>Individualism vs Collectivism</em>, <em>Uncertainty Avoidance</em>. Pemimpin publik wajib patuh pada <em>servant & ethical leadership</em>.
+              </div>
+            </div>
+          </div>`
+      },
+      {
+        title: "Modul 7: Pengambilan Keputusan",
+        tag: "MODUL 7 (5%)",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Modul 7: Mengelola Pengambilan Keputusan</h2>
+              <span class="text-xs font-mono text-[var(--muted-foreground)]">CPU-MK 7</span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-xs border border-[var(--border)] rounded-lg overflow-hidden">
+                <thead class="bg-[var(--secondary)]">
+                  <tr>
+                    <th class="p-2.5 text-left">Model Keputusan</th>
+                    <th class="p-2.5 text-left">Tokoh Utama</th>
+                    <th class="p-2.5 text-left">Karakteristik Kunci (Kata Kunci Soal)</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-[var(--border)]">
+                  <tr><td class="p-2.5 font-semibold">Rasional Komprehensif</td><td class="p-2.5">Klasik / Ekonom</td><td class="p-2.5">Informasi sempurna, semua alternatif dihitung, pilih <strong>maximizing</strong>.</td></tr>
+                  <tr><td class="p-2.5 font-semibold">Bounded Rationality</td><td class="p-2.5"><strong>Herbert Simon</strong></td><td class="p-2.5">Keterbatasan waktu, kognitif & info → pilih solusi cukup baik (<strong>Satisficing</strong>).</td></tr>
+                  <tr><td class="p-2.5 font-semibold">Inkremental</td><td class="p-2.5"><strong>Charles Lindblom</strong></td><td class="p-2.5"><em>Muddling through</em>, modifikasi kecil bertahap dari kebijakan lama.</td></tr>
+                  <tr><td class="p-2.5 font-semibold">Mixed Scanning</td><td class="p-2.5"><strong>Amitai Etzioni</strong></td><td class="p-2.5">Gabungan rasional (makro/strategis) + inkremental (mikro/detail).</td></tr>
+                  <tr><td class="p-2.5 font-semibold">Garbage Can Model</td><td class="p-2.5">Cohen, March, Olsen</td><td class="p-2.5"><em>Organized anarchy</em>: masalah, solusi, aktor bertemu secara acak.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--secondary)] text-xs space-y-1">
+              <strong>Hambatan & Teknik Keputusan Kelompok:</strong><br/>
+              • <strong>Groupthink (Janis):</strong> Tekanan konformitas kelompok mematikan pemikiran kritis.<br/>
+              • <strong>Teknik Keputusan:</strong> <em>Brainstorming</em> (bebas ide), <em>Teknik Delphi</em> (pakar anonim via kuesioner bertahap), <em>Nominal Group Technique (NGT)</em> (tulis ide mandiri lalu voting).
+            </div>
+          </div>`
+      },
+      {
+        title: "Modul 8: Tim & Kolaborasi",
+        tag: "MODUL 8 (10%)",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Modul 8: Pengembangan Tim dan Kolaborasi</h2>
+              <span class="text-xs font-mono text-[var(--muted-foreground)]">CPU-MK 8</span>
+            </div>
+            <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs space-y-2">
+              <h3 class="font-bold text-sm text-[var(--primary)]">5 Tahap Perkembangan Tim (Bruce Tuckman)</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-5 gap-2">
+                <div class="p-2.5 rounded bg-[var(--secondary)]"><strong>1. Forming</strong><br/>Pembentukan awal, masih canggung & orientasi</div>
+                <div class="p-2.5 rounded bg-[var(--secondary)]"><strong>2. Storming</strong><br/>Muncul konflik peran, adu argumen & ego</div>
+                <div class="p-2.5 rounded bg-[var(--secondary)]"><strong>3. Norming</strong><br/>Terbentuk aturan main, kohesi & saling percaya</div>
+                <div class="p-2.5 rounded bg-[var(--secondary)]"><strong>4. Performing</strong><br/>Tim matang, produktif & sinergis penuh</div>
+                <div class="p-2.5 rounded bg-[var(--secondary)]"><strong>5. Adjourning</strong><br/>Pembubaran setelah proyek/misi selesai</div>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)]">
+                <strong class="text-[var(--primary)]">Kelompok Kerja vs Tim Efektif:</strong><br/>
+                • <strong>Kelompok:</strong> Berbagi info, akuntabilitas individual, kinerja = penjumlahan.<br/>
+                • <strong>Tim:</strong> Sinergi positif (1+1 > 2), akuntabilitas bersama, keahlian saling melengkapi.
+              </div>
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)]">
+                <strong class="text-[var(--primary)]">Kolaborasi Lintas Sektor (Pemerintahan):</strong><br/>
+                Menghilangkan <em>ego sektoral</em> antar-OPD melalui koordinasi horizontal dan tujuan bersama (<em>Collaborative Governance</em>).
+              </div>
+            </div>
+          </div>`
+      },
+      {
+        title: "Modul 9: Memimpin Perubahan",
+        tag: "MODUL 9 (12,5%)",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Modul 9: Memimpin Perubahan (Transformasi)</h2>
+              <span class="text-xs font-mono text-[var(--muted-foreground)]">CPU-MK 9</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-2">
+                <h3 class="font-bold text-sm text-[var(--primary)]">1. Model Perubahan 3 Tahap Kurt Lewin</h3>
+                <ul class="space-y-1.5">
+                  <li>• <strong>Unfreezing:</strong> Mencairkan zona nyaman, ciptakan kesadaran perlunya berubah.</li>
+                  <li>• <strong>Changing (Moving):</strong> Implementasi perilaku, struktur, atau teknologi baru.</li>
+                  <li>• <strong>Refreezing:</strong> Membekukan/menstabilkan budaya baru agar tidak kembali ke pola lama.</li>
+                </ul>
+              </div>
+              <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-2">
+                <h3 class="font-bold text-sm text-[var(--primary)]">2. Learning Organization (Peter Senge) — 5 Disiplin</h3>
+                <ul class="space-y-1">
+                  <li>1. <em>Personal Mastery</em> (Penguasaan diri)</li>
+                  <li>2. <em>Mental Models</em> (Pola pikir terbuka)</li>
+                  <li>3. <em>Shared Vision</em> (Visi bersama)</li>
+                  <li>4. <em>Team Learning</em> (Pembelajaran tim)</li>
+                  <li>5. <strong>Systems Thinking</strong> (Berpikir sistem — disiplin kelima/inti)</li>
+                </ul>
+              </div>
+            </div>
+            <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--secondary)] text-xs">
+              <strong>8 Langkah Perubahan John Kotter:</strong> (1) Ciptakan urgensi → (2) Bentuk koalisi pemandu → (3) Ciptakan visi perubahan → (4) Komunikasikan visi → (5) Berdayakan aksi luas → (6) Raih kemenangan jangka pendek (<em>short-term wins</em>) → (7) Konsolidasikan hasil → (8) Jadikan budaya baru.
+            </div>
+          </div>`
+      },
+      {
+        title: "Cheat-Sheet & Jebakan Soal",
+        tag: "CHEAT-SHEET",
+        render: () => `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <h2 class="text-xl font-bold">Cheat-Sheet Cepat & Jebakan Soal UAS</h2>
+              <span class="text-xs font-mono text-[var(--primary)]">Hafalan Kilat</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-1.5">
+                <strong class="text-sm text-[var(--primary)]">Pasangan Tokoh ↔ Kata Kunci</strong>
+                <ul class="space-y-1">
+                  <li>• <strong>Wirawan:</strong> Administrator vs Manajer vs Pemimpin</li>
+                  <li>• <strong>Stogdill:</strong> Trait + Situasi menentukan efektivitas</li>
+                  <li>• <strong>Ohio State:</strong> Initiating Structure & Consideration</li>
+                  <li>• <strong>Blake & Mouton:</strong> Managerial Grid (9,9 = Team)</li>
+                  <li>• <strong>Fiedler:</strong> LPC (gaya tetap, situasi diubah)</li>
+                  <li>• <strong>Hersey-Blanchard:</strong> Kematangan pengikut (S1–S4)</li>
+                  <li>• <strong>Bass & Avolio:</strong> Transformasional (4I)</li>
+                  <li>• <strong>French & Raven:</strong> 5 Basis Kekuasaan</li>
+                  <li>• <strong>Herbert Simon:</strong> Bounded Rationality & Satisficing</li>
+                  <li>• <strong>Charles Lindblom:</strong> Inkremental (<em>Muddling through</em>)</li>
+                </ul>
+              </div>
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-1.5">
+                <strong class="text-sm text-[var(--warning)]">Jebakan Klasik Soal UT</strong>
+                <ul class="space-y-1.5">
+                  <li>⚠️ <strong>Fiedler vs Hersey-Blanchard:</strong> Fiedler menganggap gaya pemimpin <em>tidak mudah diubah</em>; Hersey-Blanchard menganggap pemimpin <em>fleksibel menyesuaikan gaya</em> dengan kematangan bawahan.</li>
+                  <li>⚠️ <strong>Delphi vs NGT:</strong> Keduanya mengurangi dominasi anggota, tapi <strong>Delphi peserta tidak bertemu tatap muka (anonim)</strong>, sedangkan NGT bertemu langsung.</li>
+                  <li>⚠️ <strong>Rasional vs Bounded:</strong> Rasional memilih opsi <em>optimal/terbaik</em> (maximizing), Herbert Simon memilih opsi <em>cukup memuaskan</em> (satisficing).</li>
+                </ul>
+              </div>
+            </div>
+          </div>`
+      },
+      {
+        title: "Simulasi Kuis UAS (50 Soal)",
+        tag: "LATIHAN SOAL",
+        render: () => renderQuizHTML()
+      }
+    ];
+
+    const quizData = [
+      {
+            "q": "1. Menurut Wirawan (2023), perbedaan mendasar antara manajer dan pemimpin terletak pada orientasinya, yaitu...",
+            "opts": [
+                  "A. Manajer berorientasi pada visi, pemimpin pada prosedur",
+                  "B. Manajer melakukan hal dengan benar (efficiency), pemimpin melakukan hal yang benar (effectiveness)",
+                  "C. Manajer mengandalkan karisma, pemimpin mengandalkan SK",
+                  "D. Manajer bekerja di sektor publik, pemimpin di sektor swasta"
+            ],
+            "ans": 1,
+            "exp": "Manajer berfokus pada 'doing things right' (efisiensi sistem), sedangkan pemimpin pada 'doing the right things' (efektivitas & visi)."
+      },
+      {
+            "q": "2. Seorang pejabat yang menjalankan tugas semata-mata berdasarkan ketertiban aturan, regulasi, dan tata laksana baku disebut oleh Wirawan sebagai...",
+            "opts": [
+                  "A. Transformational Leader",
+                  "B. Administrator",
+                  "C. Visionary",
+                  "D. Entrepreneur"
+            ],
+            "ans": 1,
+            "exp": "Administrator berfokus pada kepatuhan aturan, prosedur, dan ketertiban administratif ('doing things by the book')."
+      },
+      {
+            "q": "3. Kepemimpinan yang muncul karena pengakuan sukarela anggota kelompok atas wibawa dan keteladanan seseorang tanpa surat keputusan jabatan resmi disebut...",
+            "opts": [
+                  "A. Kepemimpinan Formal",
+                  "B. Kepemimpinan Struktural",
+                  "C. Kepemimpinan Informal",
+                  "D. Kepemimpinan Birokratis"
+            ],
+            "ans": 2,
+            "exp": "Pemimpin informal memperoleh pengaruh dari pengakuan sosial dan wibawa pribadi, bukan posisi struktural."
+      },
+      {
+            "q": "4. Kemampuan seorang pemimpin untuk tetap tangguh, tidak mudah menyerah, dan mampu mengubah krisis menjadi peluang disebut kecerdasan...",
+            "opts": [
+                  "A. IQ (Intellectual Quotient)",
+                  "B. EQ (Emotional Quotient)",
+                  "C. AQ (Adversity Quotient)",
+                  "D. SQ (Spiritual Quotient)"
+            ],
+            "ans": 2,
+            "exp": "AQ (Adversity Quotient) mengukur daya tahan dan ketangguhan seseorang menghadapi hambatan atau krisis."
+      },
+      {
+            "q": "5. Salah satu mitos tentang kepemimpinan yang keliru menurut literatur kepemimpinan modern adalah anggapan bahwa...",
+            "opts": [
+                  "A. Kepemimpinan dapat dipelajari dan dilatih",
+                  "B. Pemimpin efektif selalu memiliki jabatan struktural tertinggi",
+                  "C. Situasi organisasi memengaruhi gaya kepemimpinan",
+                  "D. Komunikasi merupakan inti kepemimpinan"
+            ],
+            "ans": 1,
+            "exp": "Kepemimpinan adalah proses memengaruhi, bukan sekadar posisi jabatan; pemimpin bisa muncul di level mana pun."
+      },
+      {
+            "q": "6. Teori klasik yang menyatakan bahwa pemimpin besar dilahirkan dengan bakat alamiah luar biasa dan tidak dapat dibentuk melalui pendidikan adalah...",
+            "opts": [
+                  "A. Behavioral Theory",
+                  "B. Great Man Theory",
+                  "C. Path-Goal Theory",
+                  "D. Situational Theory"
+            ],
+            "ans": 1,
+            "exp": "Great Man Theory (Thomas Carlyle) beranggapan pemimpin dilahirkan dengan sifat bawaan istimewa."
+      },
+      {
+            "q": "7. Kesimpulan penting Ralph Stogdill (1948) yang merevisi Teori Sifat (Trait Theory) awal adalah bahwa...",
+            "opts": [
+                  "A. Hanya tinggi badan dan kecerdasan yang menentukan pemimpin",
+                  "B. Sifat pribadi saja tidak cukup; efektivitas pemimpin juga bergantung pada interaksi dengan situasi",
+                  "C. Semua pemimpin memiliki sifat yang identik di segala zaman",
+                  "D. Pemimpin tidak membutuhkan keterampilan sosial"
+            ],
+            "ans": 1,
+            "exp": "Stogdill menemukan bahwa kepemimpinan bukan semata bawaan sifat, melainkan juga dipengaruhi tuntutan situasi."
+      },
+      {
+            "q": "8. Dalam studi Ohio State University, perilaku pemimpin yang menekankan kejelasan peran, penetapan target, dan prosedur kerja disebut dimensi...",
+            "opts": [
+                  "A. Consideration",
+                  "B. Initiating Structure",
+                  "C. Employee-centered",
+                  "D. Country Club"
+            ],
+            "ans": 1,
+            "exp": "Initiating Structure berfokus pada penataan tugas/peran, sedangkan Consideration berfokus pada hubungan/kepedulian terhadap bawahan."
+      },
+      {
+            "q": "9. Pada studi Michigan University, gaya kepemimpinan yang menekankan hubungan interpersonal, kesejahteraan, dan kebutuhan pribadi bawahan disebut...",
+            "opts": [
+                  "A. Production-centered",
+                  "B. Employee-centered",
+                  "C. Authoritative",
+                  "D. Laissez-faire"
+            ],
+            "ans": 1,
+            "exp": "Michigan membagi dua kutub: Production-centered (fokus hasil teknis) dan Employee-centered (fokus manusia)."
+      },
+      {
+            "q": "10. Pada Managerial Grid (Blake & Mouton), posisi koordinat (1,9) yang ditandai perhatian sangat tinggi pada kenyamanan orang namun sangat rendah pada produksi disebut...",
+            "opts": [
+                  "A. Impoverished Management",
+                  "B. Authority-Compliance",
+                  "C. Country Club Management",
+                  "D. Team Management"
+            ],
+            "ans": 2,
+            "exp": "Koordinat (1,9) adalah Country Club Management: suasana kerja nyaman/akrab tetapi target tugas terabaikan."
+      },
+      {
+            "q": "11. Gaya paling ideal dalam Managerial Grid Blake & Mouton yang memadukan perhatian maksimal pada tugas dan perhatian maksimal pada manusia berada pada koordinat...",
+            "opts": [
+                  "A. (1,1)",
+                  "B. (5,5)",
+                  "C. (9,1)",
+                  "D. (9,9)"
+            ],
+            "ans": 3,
+            "exp": "Koordinat (9,9) adalah Team Management: komitmen tinggi pada pencapaian tujuan sekaligus kepercayaan tim."
+      },
+      {
+            "q": "12. Menurut Model Kontingensi Fiedler (menggunakan skala LPC), gaya kepemimpinan seseorang bersifat relatif tetap, sehingga untuk mencapai efektivitas harus...",
+            "opts": [
+                  "A. Mengubah kepribadian pemimpin setiap minggu",
+                  "B. Menyesuaikan atau menempatkan pemimpin pada situasi yang cocok dengan gayanya",
+                  "C. Menghapus struktur tugas organisasi",
+                  "D. Memberhentikan seluruh bawahan"
+            ],
+            "ans": 1,
+            "exp": "Fiedler berpendapat gaya dasar pemimpin sulit diubah, sehingga organisasi perlu mencocokkan pemimpin dengan situasi (job engineering)."
+      },
+      {
+            "q": "13. Tiga variabel situasional yang menentukan tingkat kendali situasi dalam Model Fiedler adalah...",
+            "opts": [
+                  "A. Usia, gaji, dan masa kerja",
+                  "B. Hubungan pemimpin-anggota, struktur tugas, dan kekuasaan posisi",
+                  "C. Visi, misi, dan anggaran",
+                  "D. Komunikasi, disposisi, dan SOP"
+            ],
+            "ans": 1,
+            "exp": "Fiedler mengukur favorabilitas situasi lewat leader-member relations, task structure, dan position power."
+      },
+      {
+            "q": "14. Dalam Situational Leadership Theory (Hersey & Blanchard), jika bawahan memiliki kemampuan tinggi tetapi kurang percaya diri/kurang termotivasi (R3), pemimpin sebaiknya memakai gaya...",
+            "opts": [
+                  "A. S1 Telling",
+                  "B. S2 Selling",
+                  "C. S3 Participating",
+                  "D. S4 Delegating"
+            ],
+            "ans": 2,
+            "exp": "R3 (Mampu +, Mau -) membutuhkan gaya S3 Participating: tugas rendah, dukungan relasi tinggi untuk membangun kepercayaan diri."
+      },
+      {
+            "q": "15. Gaya S4 (Delegating) pada teori Hersey & Blanchard paling tepat diterapkan ketika tingkat kesiapan/kematangan pengikut berada pada level...",
+            "opts": [
+                  "A. R1 (Mampu rendah, mau rendah)",
+                  "B. R2 (Mampu rendah, mau tinggi)",
+                  "C. R3 (Mampu tinggi, mau rendah)",
+                  "D. R4 (Mampu tinggi, mau tinggi)"
+            ],
+            "ans": 3,
+            "exp": "R4 sudah sangat kompeten dan bermotivasi tinggi, sehingga pemimpin cukup mendelegasikan kewenangan."
+      },
+      {
+            "q": "16. Teori Path-Goal dari Robert House menyatakan bahwa tugas utama pemimpin adalah...",
+            "opts": [
+                  "A. Memberi sanksi keras agar target tercapai",
+                  "B. Memperjelas jalur dan menyingkirkan rintangan agar bawahan mencapai tujuan kerjanya",
+                  "C. Mengambil alih seluruh pekerjaan teknis",
+                  "D. Membatasi informasi kepada bawahan"
+            ],
+            "ans": 1,
+            "exp": "Path-Goal Theory berfokus pada bagaimana pemimpin membantu bawahan melewati 'jalur' menuju 'tujuan'."
+      },
+      {
+            "q": "17. Dalam Path-Goal Theory, gaya kepemimpinan yang menetapkan standar kinerja sangat menantang dan menunjukkan keyakinan bahwa bawahan mampu mencapainya adalah...",
+            "opts": [
+                  "A. Directive",
+                  "B. Supportive",
+                  "C. Participative",
+                  "D. Achievement-Oriented"
+            ],
+            "ans": 3,
+            "exp": "Achievement-Oriented Leadership menantang bawahan berprestasi optimal dengan target tinggi."
+      },
+      {
+            "q": "18. Komponen 'Intellectual Stimulation' dalam kepemimpinan transformasional (Bass & Avolio) tercermin dari perilaku pemimpin yang...",
+            "opts": [
+                  "A. Memberikan bonus uang lembur tepat waktu",
+                  "B. Mendorong bawahan berpikir kritis, kreatif, dan meninjau ulang asumsi lama",
+                  "C. Menghukum pegawai yang terlambat",
+                  "D. Hanya mengawasi penyimpangan dari SOP"
+            ],
+            "ans": 1,
+            "exp": "Intellectual Stimulation merangsang inovasi dan kreativitas bawahan dalam memecahkan masalah baru."
+      },
+      {
+            "q": "19. Gaya kepemimpinan transaksional yang hanya melakukan intervensi ketika standar kinerja tidak terpenuhi atau terjadi kesalahan disebut...",
+            "opts": [
+                  "A. Idealized Influence",
+                  "B. Contingent Reward",
+                  "C. Management by Exception",
+                  "D. Servant Leadership"
+            ],
+            "ans": 2,
+            "exp": "Management by Exception (aktif/pasif) merupakan ciri kepemimpinan transaksional yang bertindak saat ada deviasi."
+      },
+      {
+            "q": "20. Tokoh yang memopulerkan konsep Servant Leadership (kepemimpinan yang melayani) di mana pemimpin menempatkan kebutuhan pengikut sebagai prioritas utama adalah...",
+            "opts": [
+                  "A. Robert K. Greenleaf",
+                  "B. Frederick Taylor",
+                  "C. Max Weber",
+                  "D. Henri Fayol"
+            ],
+            "ans": 0,
+            "exp": "Robert K. Greenleaf (1970) mencetuskan konsep Servant Leadership ('the servant-first')."
+      },
+      {
+            "q": "21. Gaya kepemimpinan otoriter/otokratis masih dapat dibenarkan secara situasional apabila organisasi menghadapi kondisi...",
+            "opts": [
+                  "A. Tim peneliti senior yang sangat mandiri",
+                  "B. Situasi krisis darurat yang menuntut keputusan cepat dan tegas",
+                  "C. Proses musyawarah perencanaan desa",
+                  "D. Pengembangan kreativitas seni"
+            ],
+            "ans": 1,
+            "exp": "Saat krisis atau keadaan darurat, pengambilan keputusan cepat satu komando (otoriter) sering kali lebih efektif."
+      },
+      {
+            "q": "22. Gaya kepemimpinan Laissez-Faire (kendali bebas) paling efektif apabila diterapkan pada lingkungan kerja yang...",
+            "opts": [
+                  "A. Pegawainya baru lulus dan belum paham tugas",
+                  "B. Anggotanya terdiri atas para pakar profesional yang bermotivasi dan mandiri tinggi",
+                  "C. Sedang terjadi bencana alam mendadak",
+                  "D. Memiliki tingkat kedisiplinan sangat rendah"
+            ],
+            "ans": 1,
+            "exp": "Laissez-faire memberikan otonomi luas sehingga hanya berhasil jika tim memiliki keahlian dan kemandirian tinggi."
+      },
+      {
+            "q": "23. Peran pemimpin sebagai 'spokesperson' atau penyampai informasi yang memastikan kebijakan dipahami secara utuh oleh seluruh unit kerja masuk ke dalam fungsi...",
+            "opts": [
+                  "A. Peran Penyampaian Informasi",
+                  "B. Peran Hukuman Disiplin",
+                  "C. Peran Audit Keuangan",
+                  "D. Peran Administratif Pasif"
+            ],
+            "ans": 0,
+            "exp": "Modul 4 menekankan empat peran utama: perumusan visi, pengendalian & relasi, pembangkit semangat, dan penyampaian informasi."
+      },
+      {
+            "q": "24. Perencanaan yang disusun oleh pimpinan puncak untuk menentukan arah jangka panjang (5–20 tahun) dan posisi organisasi terhadap lingkungan disebut perencanaan...",
+            "opts": [
+                  "A. Operasional",
+                  "B. Taktis",
+                  "C. Strategis",
+                  "D. Harian"
+            ],
+            "ans": 2,
+            "exp": "Perencanaan strategis berada pada level pimpinan puncak dengan cakrawala jangka panjang."
+      },
+      {
+            "q": "25. Perencanaan yang menjadi jembatan antara rencana strategis dan eksekusi harian di tingkat manajer menengah (kepala bidang/divisi) disebut perencanaan...",
+            "opts": [
+                  "A. Filosofis",
+                  "B. Taktis",
+                  "C. Konstitusional",
+                  "D. Insidental"
+            ],
+            "ans": 1,
+            "exp": "Perencanaan taktis menerjemahkan strategi umum menjadi program alokasi sumber daya jangka menengah."
+      },
+      {
+            "q": "26. Inti dari keterampilan komunikasi efektif seorang pemimpin dalam organisasi publik adalah terciptanya...",
+            "opts": [
+                  "A. Instruksi satu arah tanpa umpan balik",
+                  "B. Kesamaan pemahaman makna (shared meaning) antara pemimpin dan pelaksana",
+                  "C. Banyaknya dokumen memo resmi",
+                  "D. Dominasi pembicaraan oleh pimpinan"
+            ],
+            "ans": 1,
+            "exp": "Komunikasi efektif diukur dari kesepahaman makna dan umpan balik dua arah, bukan sekadar banyaknya instruksi."
+      },
+      {
+            "q": "27. Menurut French & Raven, kekuasaan yang muncul karena bawahan mengagumi pribadi, integritas, dan keteladanan pemimpin sehingga ingin menirunya disebut...",
+            "opts": [
+                  "A. Coercive Power",
+                  "B. Legitimate Power",
+                  "C. Referent Power",
+                  "D. Reward Power"
+            ],
+            "ans": 2,
+            "exp": "Referent Power berasal dari daya tarik personal, karisma, dan penghormatan tulus pengikut."
+      },
+      {
+            "q": "28. Seorang kepala dinas memerintahkan staf karena posisinya tercantum dalam struktur organisasi dan SK pengangkatan. Basis kekuasaan ini disebut...",
+            "opts": [
+                  "A. Expert Power",
+                  "B. Legitimate Power",
+                  "C. Referent Power",
+                  "D. Informal Power"
+            ],
+            "ans": 1,
+            "exp": "Legitimate Power bersumber dari kewenangan jabatan resmi dalam hierarki organisasi."
+      },
+      {
+            "q": "29. Penggunaan basis kekuasaan koersif (Coercive Power) secara berlebihan dalam organisasi birokrasi cenderung menghasilkan dampak...",
+            "opts": [
+                  "A. Komitmen jangka panjang dan inovasi",
+                  "B. Kepatuhan semu karena takut, disertai resistensi tersembunyi",
+                  "C. Kepuasan kerja yang tinggi",
+                  "D. Peningkatan rasa memiliki"
+            ],
+            "ans": 1,
+            "exp": "Coercive power (ancaman hukuman) hanya menghasilkan kepatuhan sementara (compliance), bukan komitmen tulus."
+      },
+      {
+            "q": "30. Konflik dalam organisasi yang justru memicu perdebatan ide sehat untuk memperbaiki kualitas pelayanan publik dikategorikan sebagai...",
+            "opts": [
+                  "A. Konflik Disfungsional",
+                  "B. Konflik Fungsional",
+                  "C. Konflik Destruktif",
+                  "D. Konflik Vertikal"
+            ],
+            "ans": 1,
+            "exp": "Konflik fungsional mendukung tujuan kelompok dan mendorong inovasi/evaluasi kritis."
+      },
+      {
+            "q": "31. Dalam studi kepemimpinan lintas budaya Geert Hofstede, dimensi yang menggambarkan sejauh mana masyarakat menerima distribusi kekuasaan yang tidak merata dalam institusi adalah...",
+            "opts": [
+                  "A. Uncertainty Avoidance",
+                  "B. Power Distance",
+                  "C. Masculinity",
+                  "D. Long-term Orientation"
+            ],
+            "ans": 1,
+            "exp": "Power Distance (Jarak Kekuasaan) menunjukkan tingkat penerimaan atas ketimpangan hierarki kekuasaan."
+      },
+      {
+            "q": "32. Tantangan moralitas pemimpin sektor publik di Indonesia yang sering berbenturan dengan UU No. 25/2009 dan prinsip tata kelola yang baik adalah...",
+            "opts": [
+                  "A. Efisiensi jam kerja",
+                  "B. Konflik kepentingan, nepotisme, dan penyalahgunaan wewenang (diskresi koruptif)",
+                  "C. Penggunaan komputer modern",
+                  "D. Pelatihan kompetensi ASN"
+            ],
+            "ans": 1,
+            "exp": "Etika kepemimpinan publik menuntut integritas melawan konflik kepentingan dan penyalahgunaan wewenang."
+      },
+      {
+            "q": "33. Pengambilan keputusan dengan asumsi informasi tersedia sempurna, semua alternatif dihitung untung-ruginya, dan dipilih hasil paling optimal disebut model...",
+            "opts": [
+                  "A. Inkremental",
+                  "B. Rasional Komprehensif",
+                  "C. Garbage Can",
+                  "D. Intuitif"
+            ],
+            "ans": 1,
+            "exp": "Model Rasional Komprehensif mengasumsikan rasionalitas penuh (maximizing) dengan informasi lengkap."
+      },
+      {
+            "q": "34. Herbert A. Simon mengkritik model rasional penuh karena manusia memiliki keterbatasan kognitif, waktu, dan biaya informasi, yang ia sebut sebagai...",
+            "opts": [
+                  "A. Muddling Through",
+                  "B. Bounded Rationality",
+                  "C. Mixed Scanning",
+                  "D. Groupthink"
+            ],
+            "ans": 1,
+            "exp": "Bounded Rationality (rasionalitas terbatas) mendorong pengambil keputusan memilih solusi 'satisficing'."
+      },
+      {
+            "q": "35. Charles Lindblom mengembangkan model pengambilan keputusan yang melakukan penyesuaian kecil-kecilan dari kebijakan sebelumnya karena kendala politik, yang dikenal dengan istilah...",
+            "opts": [
+                  "A. Muddling Through (Inkremental)",
+                  "B. Zero-Based Budgeting",
+                  "C. Comprehensive Planning",
+                  "D. Delphi Method"
+            ],
+            "ans": 0,
+            "exp": "Model Inkremental Lindblom ('Science of Muddling Through') fokus pada perubahan bertahap agar minim risiko politik."
+      },
+      {
+            "q": "36. Amitai Etzioni menggabungkan kekuatan model rasional (untuk keputusan makro/fundamental) dan model inkremental (untuk keputusan mikro/implementatif) ke dalam model...",
+            "opts": [
+                  "A. Garbage Can Model",
+                  "B. Mixed Scanning",
+                  "C. Game Theory",
+                  "D. Public Choice"
+            ],
+            "ans": 1,
+            "exp": "Mixed Scanning memindai gambaran besar secara rasional lalu meneliti detail spesifik secara inkremental."
+      },
+      {
+            "q": "37. Model pengambilan keputusan yang menggambarkan kondisi 'anarki terorganisir' di mana masalah, solusi, dan aktor bertemu secara kebetulan adalah...",
+            "opts": [
+                  "A. Model Rasional",
+                  "B. Garbage Can Model (Cohen, March, Olsen)",
+                  "C. Model Klasik",
+                  "D. Model Kontingensi"
+            ],
+            "ans": 1,
+            "exp": "Garbage Can Model menjelaskan keputusan di organisasi kompleks dengan tujuan ambigu dan partisipasi cair."
+      },
+      {
+            "q": "38. Fenomena di mana kelompok pengambil keputusan mengabaikan kritik dan alternatif realistis demi menjaga kesepakatan dan harmoni semu disebut...",
+            "opts": [
+                  "A. Brainstorming",
+                  "B. Groupthink (Irving Janis)",
+                  "C. Synergy",
+                  "D. Empowerment"
+            ],
+            "ans": 1,
+            "exp": "Groupthink membuat kelompok menekan perbedaan pendapat sehingga kualitas keputusan merosot."
+      },
+      {
+            "q": "39. Teknik pengambilan keputusan kelompok yang mengumpulkan pendapat para pakar secara terpisah dan anonim melalui beberapa putaran kuesioner disebut...",
+            "opts": [
+                  "A. Brainstorming",
+                  "B. Nominal Group Technique",
+                  "C. Teknik Delphi",
+                  "D. Voting Terbuka"
+            ],
+            "ans": 2,
+            "exp": "Teknik Delphi menjaga anonimitas pakar tanpa tatap muka untuk menghindari tekanan status sosial."
+      },
+      {
+            "q": "40. Perbedaan utama Nominal Group Technique (NGT) dibanding Brainstorming biasa adalah pada NGT...",
+            "opts": [
+                  "A. Anggota tidak boleh hadir di ruangan yang sama",
+                  "B. Anggota menulis ide secara diam/mandiri terlebih dahulu sebelum berdiskusi dan melakukan pemungutan suara",
+                  "C. Keputusan ditentukan oleh pimpinan saja",
+                  "D. Tidak boleh ada pemeringkatan ide"
+            ],
+            "ans": 1,
+            "exp": "NGT mewajibkan penulisan ide mandiri sebelum diskusi terstruktur dan voting peringkat agar anggota pendiam tetap bersuara."
+      },
+      {
+            "q": "41. Pada model Bruce Tuckman, tahap di mana anggota tim mulai menyepakati aturan main, membangun rasa saling percaya, dan meredakan konflik sebelumnya adalah...",
+            "opts": [
+                  "A. Forming",
+                  "B. Storming",
+                  "C. Norming",
+                  "D. Performing"
+            ],
+            "ans": 2,
+            "exp": "Urutan Tuckman: Forming (orientasi) → Storming (konflik) → Norming (kesepakatan/kohesi) → Performing (kinerja puncak) → Adjourning."
+      },
+      {
+            "q": "42. Tahap kelima yang ditambahkan kemudian dalam model Tuckman khusus untuk tim proyek sementara yang harus dibubarkan setelah misi selesai adalah...",
+            "opts": [
+                  "A. Reforming",
+                  "B. Adjourning",
+                  "C. Stabilizing",
+                  "D. Delegating"
+            ],
+            "ans": 1,
+            "exp": "Adjourning adalah tahap pembubaran tim dan evaluasi akhir setelah proyek berakhir."
+      },
+      {
+            "q": "43. Ciri pembeda utama antara 'Tim Kerja' (Work Team) dan 'Kelompok Kerja' (Work Group) dalam organisasi adalah...",
+            "opts": [
+                  "A. Kelompok kerja menghasilkan sinergi positif (1+1 > 2)",
+                  "B. Tim kerja memiliki akuntabilitas bersama dan menghasilkan sinergi positif",
+                  "C. Tim kerja tidak memerlukan pemimpin",
+                  "D. Kelompok kerja selalu lebih produktif"
+            ],
+            "ans": 1,
+            "exp": "Kelompok kerja sekadar berbagi informasi dengan akuntabilitas individu; tim kerja menciptakan sinergi kolektif."
+      },
+      {
+            "q": "44. Hambatan klasik kolaborasi antarinstansi pemerintah daerah yang harus diatasi pemimpin publik adalah...",
+            "opts": [
+                  "A. Tingginya anggaran pelatihan",
+                  "B. Ego sektoral dan fragmentasi kewenangan antar-OPD",
+                  "C. Adanya aplikasi digital",
+                  "D. Terlalu banyaknya tenaga ahli"
+            ],
+            "ans": 1,
+            "exp": "Ego sektoral membuat tiap dinas bekerja dalam silo sehingga kolaborasi lintas sektor terhambat."
+      },
+      {
+            "q": "45. Dalam model perubahan 3 langkah Kurt Lewin, upaya menstabilkan dan mengintegrasikan perilaku baru ke dalam rutinitas kerja agar tidak kembali ke kebiasaan lama disebut...",
+            "opts": [
+                  "A. Unfreezing",
+                  "B. Changing / Moving",
+                  "C. Refreezing",
+                  "D. Downsizing"
+            ],
+            "ans": 2,
+            "exp": "Refreezing mengukuhkan perubahan yang telah terjadi agar menjadi budaya kerja permanen."
+      },
+      {
+            "q": "46. Langkah pertama menurut John Kotter (8-Step Change Model) sebelum membentuk tim pemandu atau menyusun visi perubahan adalah...",
+            "opts": [
+                  "A. Merayakan kemenangan jangka pendek",
+                  "B. Menciptakan rasa urgensi (Establishing a Sense of Urgency)",
+                  "C. Mengubah struktur gaji",
+                  "D. Melakukan mutasi besar-besaran"
+            ],
+            "ans": 1,
+            "exp": "Kotter menegaskan perubahan gagal jika anggota tidak merasakan urgensi mengapa harus berubah sekarang."
+      },
+      {
+            "q": "47. Menurut Peter Senge dalam konsep 'Learning Organization', disiplin kelima yang menjadi pengikat dan inti dari empat disiplin lainnya adalah...",
+            "opts": [
+                  "A. Personal Mastery",
+                  "B. Shared Vision",
+                  "C. Systems Thinking (Berpikir Sistem)",
+                  "D. Mental Models"
+            ],
+            "ans": 2,
+            "exp": "Systems Thinking adalah disiplin kelima yang memadukan seluruh bagian organisasi menjadi satu kesatuan utuh."
+      },
+      {
+            "q": "48. Dalam regulasi ASN Indonesia (Permenpan-RB No. 38 Tahun 2017), standar kompetensi manajerial ASN mencakup kompetensi kepemimpinan yang diarahkan untuk...",
+            "opts": [
+                  "A. Memperkuat loyalitas partai politik",
+                  "B. Mengelola perubahan, integritas, kerja sama, dan pelayanan publik",
+                  "C. Menghindari penggunaan teknologi",
+                  "D. Memperpanjang rantai birokrasi"
+            ],
+            "ans": 1,
+            "exp": "Permenpan-RB 38/2017 menetapkan 8 kompetensi manajerial ASN termasuk integritas, kerja sama, komunikasi, dan mengelola perubahan."
+      },
+      {
+            "q": "49. Menurut UU No. 30 Tahun 2014 tentang Administrasi Pemerintahan, keputusan dan/atau tindakan pejabat pemerintahan dalam mengambil keputusan diskresi harus dilandasi asas...",
+            "opts": [
+                  "A. Kepentingan pribadi pejabat",
+                  "B. Asas-Asas Umum Pemerintahan yang Baik (AUPB)",
+                  "C. Kecepatan tanpa prosedur",
+                  "D. Keuntungan korporasi"
+            ],
+            "ans": 1,
+            "exp": "UU 30/2014 mewajibkan setiap pengambilan keputusan dan diskresi pejabat publik patuh pada AUPB."
+      },
+      {
+            "q": "50. Inovasi sektor publik seperti penerapan SPBE dan layanan satu pintu sering terhambat oleh 'resistance to change' dari aparatur. Langkah pemimpin perubahan yang paling tepat menurut BMP adalah...",
+            "opts": [
+                  "A. Membiarkan staf bekerja dengan cara lama selamanya",
+                  "B. Komunikasi terbuka, pelibatan staf sejak awal, pelatihan, dan memberi teladan nyata",
+                  "C. Memberhentikan seluruh pegawai senior",
+                  "D. Menutup akses pengaduan"
+            ],
+            "ans": 1,
+            "exp": "Mengatasi resistensi perubahan membutuhkan komunikasi empatik, partisipasi pelaksana, peningkatan kapasitas, dan keteladanan pemimpin."
+      }
+];
+
+
+    let userAnswers = {};
+    let quizFilter = 'all';
+
+    function renderQuizHTML() {
+      const answeredCount = Object.keys(userAnswers).length;
+      const correctCount = Object.entries(userAnswers).filter(([qi, oi]) => quizData[qi].ans === oi).length;
+      const pct = answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0;
+
+      const filtered = quizData.map((item, qi) => ({ item, qi })).filter(({ item, qi }) => {
+        if (quizFilter === 'unanswered') return userAnswers[qi] === undefined;
+        if (quizFilter === 'wrong') return userAnswers[qi] !== undefined && userAnswers[qi] !== item.ans;
+        return true;
+      });
+
+      return `
+        <div class="space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border,#cbd5e1)] pb-3">
+            <div>
+              <h2 class="text-xl font-bold">Simulasi Kuis UAS (${quizData.length} Soal)</h2>
+              <p class="text-xs text-[var(--muted-foreground,#475569)]">Dijawab: <strong>${answeredCount}/${quizData.length}</strong> • Benar: <strong class="text-emerald-600">${correctCount}</strong> • Akurasi: <strong>${pct}%</strong></p>
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5 text-xs">
+              <button onclick="setFilter('all')" class="px-2.5 py-1 rounded-lg border ${quizFilter==='all'?'bg-[var(--primary,#1d4ed8)] text-white border-transparent font-bold':'border-[var(--border,#cbd5e1)]'}">Semua (${quizData.length})</button>
+              <button onclick="setFilter('unanswered')" class="px-2.5 py-1 rounded-lg border ${quizFilter==='unanswered'?'bg-[var(--primary,#1d4ed8)] text-white border-transparent font-bold':'border-[var(--border,#cbd5e1)]'}">Belum (${quizData.length - answeredCount})</button>
+              <button onclick="setFilter('wrong')" class="px-2.5 py-1 rounded-lg border ${quizFilter==='wrong'?'bg-[var(--primary,#1d4ed8)] text-white border-transparent font-bold':'border-[var(--border,#cbd5e1)]'}">Salah</button>
+              <button onclick="resetQuiz()" class="px-2.5 py-1 rounded-lg border border-rose-400 text-rose-600 hover:bg-rose-50 font-semibold">Reset</button>
+            </div>
+          </div>
+          <div class="space-y-3 max-h-[440px] overflow-y-auto pr-1">
+            ${filtered.length === 0 ? '<p class="text-xs text-center py-8 text-[var(--muted-foreground,#475569)]">Tidak ada soal pada filter ini.</p>' : filtered.map(({ item, qi }) => {
+              const ua = userAnswers[qi];
+              const isDone = ua !== undefined;
+              return `
+              <div class="p-3.5 rounded-xl border border-[var(--border,#cbd5e1)] bg-[var(--background,#f8fafc)] space-y-2 text-xs">
+                <p class="font-semibold leading-relaxed">${item.q}</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                  ${item.opts.map((opt, oi) => {
+                    let cls = "border-[var(--border,#cbd5e1)] hover:bg-[var(--secondary,#e2e8f0)]";
+                    if (isDone) {
+                      if (oi === item.ans) cls = "border-emerald-600 bg-emerald-600 text-white font-bold";
+                      else if (oi === ua && ua !== item.ans) cls = "border-rose-600 bg-rose-600 text-white";
+                      else cls = "border-[var(--border,#cbd5e1)] opacity-60";
+                    }
+                    return `<button ${isDone?'disabled':''} onclick="checkAns(${qi}, ${oi})" class="text-left px-3 py-1.5 rounded-lg border transition ${cls}">${opt}</button>`;
+                  }).join('')}
+                </div>
+                ${isDone ? `<p class="text-[11px] p-2 rounded bg-[var(--secondary,#e2e8f0)]">${ua === item.ans ? '✓ Benar! ' : '✗ Kurang tepat. '}${item.exp}</p>` : ''}
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`;
+    }
+
+    function setFilter(f) { quizFilter = f; renderPage(); }
+    function resetQuiz() { userAnswers = {}; quizFilter = 'all'; renderPage(); }
+    function checkAns(qi, oi) { userAnswers[qi] = oi; renderPage(); }
+
+    let current = 0;
+    function renderPage() {
+      const container = document.getElementById('pageContent');
+      container.classList.remove('flip-enter');
+      void container.offsetWidth;
+      container.classList.add('flip-enter');
+      container.innerHTML = pages[current].render();
+      document.getElementById('pageBadge').textContent = `${current + 1} / ${pages.length}`;
+      document.getElementById('progressBar').style.width = `${((current + 1) / pages.length) * 100}%`;
+      document.getElementById('prevBtn').disabled = current === 0;
+      document.getElementById('nextBtn').disabled = current === pages.length - 1;
+      renderToc();
+    }
+
+    function renderToc() {
+      const toc = document.getElementById('tocDrawer');
+      toc.innerHTML = pages.map((p, idx) => `
+        <button onclick="goTo(${idx})" class="text-left p-2 rounded-lg border text-xs transition ${idx === current ? 'border-[var(--primary)] bg-[var(--secondary)] font-bold' : 'border-[var(--border)] hover:bg-[var(--secondary)]'}">
+          <div class="text-[10px] text-[var(--muted-foreground)]">${p.tag}</div>
+          <div class="truncate">${p.title}</div>
+        </button>
+      `).join('');
+    }
+
+    function toggleToc() { document.getElementById('tocDrawer').classList.toggle('hidden'); }
+    function goTo(idx) { current = idx; renderPage(); document.getElementById('tocDrawer').classList.add('hidden'); }
+    function nextPage() { if (current < pages.length - 1) { current++; renderPage(); } }
+    function prevPage() { if (current > 0) { current--; renderPage(); } }
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') nextPage();
+      if (e.key === 'ArrowLeft') prevPage();
+    });
+
+    renderPage();
+  </script>
+</body>
+</html>
